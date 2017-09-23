@@ -28,13 +28,13 @@ type Odd struct {
 	OddsId   int `json:"oddsid,omitempty"filter:"oddsid"`
 	OddsType int `json:"oddstype,omitempty"filter:"oddstype"`
 	Special  *string `json:"special,omitempty"filter:"special"`
-	Active   *int `json:"active,omitempty"filter:"active"`
+	Active   *int `json:"active,omitempty"filter:"odds.active"`
 	Typename *string `json:"typename,omitempty"filter:"typename"`
 	Odds     []*OddField `json:"odds,omitempty"`
 }
 type OddField struct {
 	Outcomeid *int `json:"outcomeid,omitempty"filter:"outcomeid"`
-	Active    *int `json:"active,omitempty"filter:"odds.active"`
+	Active    *int `json:"active,omitempty"filter:"odds.odds.active"`
 	Outcome   *string `json:"outcome,omitempty"filter:"outcome"`
 	Odd       *float64 `json:"odd,omitempty"filter:"odd"`
 }
