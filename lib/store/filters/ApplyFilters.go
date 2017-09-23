@@ -1,18 +1,14 @@
 package filters
 
 import (
-	"reflect"
-	"sync"
 	"time"
 	"fmt"
+	"reflect"
+	"sync"
 )
 
-func ApplyFilters(data interface{}, filters map[string]string, waitgroup ...*sync.WaitGroup) {
-	var child bool //main node or a child node
-	if len(waitgroup) > 0 {
-		child = true
-		defer waitgroup[0].Done()
-	}
+func ApplyFilters(data interface{}, filters map[string]string) {
+
 	if len(filters) == 0 {
 		fmt.Println("no filter")
 		return
@@ -21,62 +17,83 @@ func ApplyFilters(data interface{}, filters map[string]string, waitgroup ...*syn
 		//reduce the throughput for testing
 		time.Sleep(time.Second)
 	}
-
-	var wg = new(sync.WaitGroup)
-
-	val := reflect.ValueOf(data)
-	if val.Kind() == reflect.Ptr {
-		val = val.Elem()
+	var value = reflect.ValueOf(data)
+	if value.Kind() == reflect.Ptr && (value.Elem().Kind() == reflect.Struct || value.Elem().Kind() == reflect.Slice) {
+		value = value.Elem()
 	}
-	for i := 0; i < val.NumField(); i++ {
-		var sub = val.Field(i)
-		var subType = val.Type().Field(i)
-		//var valid bool
-		if sub.Kind() == reflect.Ptr {
-			sub = sub.Elem()
-		}
-		switch sub.Kind() {
-		case reflect.Slice:
-			//handle slices
-			for ind := 0; ind < sub.Len(); ind++ {
-				item := sub.Index(ind)
-				if item.Kind() == reflect.Ptr {
-					item = item.Elem()
-				}
-				switch item.Kind() {
-				case reflect.Struct:
-					//handle struct
-					wg.Add(1)
-					go ApplyFilters(item.Interface(), filters, wg)
-				}
-			}
-			continue
-		case reflect.Struct:
-			//handle struct
-			wg.Add(1)
-			go ApplyFilters(val.Field(i).Interface(), filters, wg)
-			continue
-		}
-		//
-		//not a struct or slice, eligible for filtering
-		if child && !sub.CanSet() {
-			if !sub.IsValid() {
-				sub = val.Field(i)
-			}
-			if sub.Kind()==reflect.Int{
-				fmt.Println(subType.Tag.Get("filter"))
-			}
-		}
-		tag := subType.Tag.Get("filter")
-		if tag == "" || filters[tag] == "" || !sub.CanSet() {
-			continue
-		}
-		tag = filters[tag]
-		//fmt.Println("test")
-		//sub.SetInt(15)
-		//FilterDisableFunc(&sub)
-		//fmt.Println(sub.Interface())
+	var wg sync.WaitGroup
+	switch value.Kind() {
+	case reflect.Struct:
+		wg.Add(1)
+		go loopStruct(&value, filters, &wg)
+	case reflect.Slice:
+		wg.Add(1)
+		go loopSlice(&value, filters, &wg)
 	}
-
 	wg.Wait()
+}
+
+func loopStruct(val *reflect.Value, filters map[string]string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		switch {
+		case field.Kind() == reflect.Struct:
+			wg.Add(1)
+			go loopStruct(&field, filters, wg)
+		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Struct:
+			wg.Add(1)
+			var elem = field.Elem()
+			go loopStruct(&elem, filters, wg)
+		case field.Kind() == reflect.Slice:
+			wg.Add(1)
+			go loopSlice(&field, filters, wg)
+		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Slice:
+			wg.Add(1)
+			var elem = field.Elem()
+			go loopSlice(&elem, filters, wg)
+		default:
+			var tag = reflect.TypeOf(val.Interface()).Field(i).Tag.Get("filter")
+			flt, ok := filters[tag];
+			if !ok {
+				continue
+			}
+			_ = flt
+			//fmt.Println(field.CanSet(), field.Kind(), reflect.TypeOf(val.Interface()).Field(i).Tag.Get("filter"), reflect.TypeOf(val.Interface()).Field(i).Tag.Get("json"))
+			filterField(&field, flt)
+
+		}
+
+	}
+}
+func loopSlice(val *reflect.Value, filters map[string]string, wg *sync.WaitGroup) {
+	defer wg.Done()
+	for i := 0; i < val.Len(); i++ {
+		var field = val.Index(i)
+		switch {
+		case field.Kind() == reflect.Struct:
+			wg.Add(1)
+			go loopStruct(&field, filters, wg)
+		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Struct:
+			wg.Add(1)
+			var elem = field.Elem()
+			go loopStruct(&elem, filters, wg)
+		case field.Kind() == reflect.Slice:
+			wg.Add(1)
+			go loopSlice(&field, filters, wg)
+		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Slice:
+			wg.Add(1)
+			var elem = field.Elem()
+			go loopSlice(&elem, filters, wg)
+		}
+	}
+}
+func filterField(field *reflect.Value, filter string) {
+	//var fld reflect.Value
+	for r, f := range Filter {
+		if !r.MatchString(filter) {
+			continue
+		}
+		f(field, filter)
+	}
 }
