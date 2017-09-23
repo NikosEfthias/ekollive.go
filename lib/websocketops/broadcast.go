@@ -131,9 +131,6 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 				resp.Odds = append(resp.Odds, o)
 			}
 			if resp.Matchid != nil {
-				if len(resp.Odds)>1{
-					fmt.Println("active",*resp.Odds[0].Active)
-				}
 				filters.ApplyFilters(resp, filters.GetFiltersByMatchId(strconv.Itoa(*resp.Matchid)))
 			}
 			dt, err := json.Marshal(resp)
