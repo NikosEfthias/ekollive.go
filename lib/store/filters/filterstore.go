@@ -5,7 +5,6 @@ import (
 	"flag"
 	"os"
 	"encoding/csv"
-	"regexp"
 	"fmt"
 	"../../../lib"
 	"strings"
@@ -50,9 +49,8 @@ func LoadAll() {
 			break
 		}
 		var filter, value, mid = strings.TrimSpace(line[k]), strings.TrimSpace(line[v]), strings.TrimSpace(line[matchid])
-		for _, r := range ValidFilters {
-			rgx := regexp.MustCompile(r)
-			if rgx.MatchString(value) {
+		for r, _ := range Filter {
+			if r.MatchString(value) {
 				filtersValid = true
 				break
 			}
