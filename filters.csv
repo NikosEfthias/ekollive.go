@@ -1,1 +1,3 @@
-*,active,-
+*, clockstop, -
+*, active   , 12
+*,odds.odds.active,-
