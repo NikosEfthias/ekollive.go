@@ -2,26 +2,28 @@ package main
 
 import (
 	"net/http"
-	"./models"
-	"./lib/betradar"
-	wso "./lib/websocketops"
-	"./lib/store/oddids"
-	"./lib/store/filters"
+	_ "net/http/pprof"
+
 	"./lib"
-	"flag"
+	"./lib/betradar"
+	"./lib/store/filters"
+	"./lib/store/oddids"
+	wso "./lib/websocketops"
+	"./models"
+	"log"
+	"fmt"
 )
 
 func init() {
-	lib.ApplyFlags()
-	flag.Parse()
 	oddids.LoadAll()
 	filters.Init()
 }
 func main() {
-
+	mux := http.NewServeMux()
+	mux.Handle("/", wso.StartWsServer()) //websocket server
 	var c = make(chan models.BetradarLiveOdds)
 	go betradar.Parse(c)
 	go wso.StartBroadcast(c)
-
-	http.ListenAndServe(":9090", wso.StartWsServer())
+	fmt.Println("server listenin on port ", *lib.Port)
+	log.Fatalln(http.ListenAndServe(":" + *lib.Port, mux))
 }
