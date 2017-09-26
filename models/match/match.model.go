@@ -15,7 +15,7 @@ type Match struct {
 	Score                 *string `gorm:"column:score"`
 	Service               *int `json:"service,omitempty"`
 	Msgnumber             *int `gorm:"column:msgnumber"`
-	Lastupdate            time.Time `gorm:"column:lastupdate"`
+	Lastupdate            *string `gorm:"column:lastupdate"`
 	Remainingtime         *string `json:"remainingtime,omitempty"`
 	Suspendaway           *int `json:"suspendaway,omitempty"`
 	Suspendhome           *int `json:"suspendhome,omitempty"`
