@@ -14,6 +14,7 @@ var (
 	Key                 *string
 	BetradarURL         *string
 	BetradarBookmakerId *string
+	BAR                 *bool
 )
 
 func init() {
@@ -27,6 +28,7 @@ func init() {
 
 }
 func applyFlags() {
+	BAR = flag.Bool("BAR", false, "Diplay the limiter and goroutine numbers")
 	BetradarBookmakerId = flag.String("BookmakerID", "", "Set betradar bookmaker id")
 	BetradarURL = flag.String("BetradarURL", "liveoddstest.betradar.com:1984", "betradar url to use to get live data")
 	Key = flag.String("KEY", "", "Betradar key to use")

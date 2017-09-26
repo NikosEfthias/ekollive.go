@@ -4,9 +4,11 @@ import "../models"
 import (
 	"../models/match"
 	"time"
+	"sync"
 )
 
-func UpsertMatches(matches []models.Match) {
+func UpsertMatches(matches []models.Match, limiter chan bool) {
+	var wg sync.WaitGroup
 	time.Sleep(time.Millisecond * 500)
 	for _, m := range matches {
 		mtc := &match.Match{
@@ -38,15 +40,19 @@ func UpsertMatches(matches []models.Match) {
 			Gamescore:             m.Gamescore,
 		}
 		match.Model.Where(match.Match{Matchid: mtc.Matchid}).Assign(mtc).FirstOrCreate(mtc)
-		//if len()
 		if len(m.Odds) > 0 {
-			go UpsertOdds(m)
+			wg.Add(1)
+			go UpsertOdds(m, &wg)
 		}
 		if len(m.Card) > 0 {
-			go UpsertCards(m)
+			wg.Add(1)
+			go UpsertCards(m, &wg)
 		}
 		if len(m.ScoreField) > 0 {
-			go UpsertScores(m)
+			wg.Add(1)
+			go UpsertScores(m, &wg)
 		}
 	}
+	wg.Wait()
+	<-limiter
 }

@@ -3,9 +3,11 @@ package controllers
 import "../models"
 import (
 	"../models/score"
+	"sync"
 )
 
-func UpsertScores(m models.Match) {
+func UpsertScores(m models.Match, wg *sync.WaitGroup) {
+	defer wg.Done()
 	for _, s := range m.ScoreField {
 		score.Model.Where(&score.Score{
 			Scoreid: s.Id,

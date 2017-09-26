@@ -7,12 +7,11 @@ import (
 	"fmt"
 	"../../models/security/origin"
 	"strings"
-	"github.com/pressly/chi"
 )
 
-func StartWsServer() *chi.Mux {
-	mux := chi.NewRouter()
-	mux.Get("/socket", func(w http.ResponseWriter, r *http.Request) {
+func StartWsServer() *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/socket", func(w http.ResponseWriter, r *http.Request) {
 		upg := ws.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return origin.CheckOk(r.Header.Get("origin"))
@@ -21,8 +20,8 @@ func StartWsServer() *chi.Mux {
 		con, err := upg.Upgrade(w, r, nil)
 		if nil != err {
 			if !strings.Contains(err.Error(), "Origin") {
-				fmt.Println(err) //If its origin error don't bother printing
 			}
+			fmt.Println(err, r.Header.Get("origin")) //If its origin error don't bother printing
 			return
 		}
 		defer con.Close()

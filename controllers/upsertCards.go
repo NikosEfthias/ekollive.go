@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"../models"
 	"../models/card"
+	"sync"
 )
 
 //insert card
 
-func UpsertCards(match models.Match) {
+func UpsertCards(match models.Match,wg *sync.WaitGroup) {
+	defer wg.Done()
 	if len(match.Card) < 1 {
 		return
 	}

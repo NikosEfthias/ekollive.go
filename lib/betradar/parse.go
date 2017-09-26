@@ -1,25 +1,34 @@
 package betradar
 
 import (
-	"../../conf"
-	"../../models"
-	_ "../../controllers"
-	"os"
 	"bytes"
-	"strings"
-	"runtime"
 	"encoding/xml"
+	"strings"
+	"../../controllers"
+	"../../lib"
+	"../../models"
+	"fmt"
 	"time"
+	"runtime"
 )
 
 var old = ""
 
 func Parse(c chan models.BetradarLiveOdds) {
-	con := Connect(conf.Conf["betradar-"+os.Getenv("ekolEnv")+"-url"])
+	con := Connect(*lib.BetradarURL)
 	Login(con)
 	scanner := GetBufferReader(con)
 	var mainTag bytes.Buffer
 	var start, flush bool
+	var limiter = make(chan bool, *lib.J)
+	if *lib.BAR {
+		go func() {
+			for {
+				time.Sleep(time.Millisecond * 500)
+				fmt.Printf("\rlimiter (%d)=> %d", len(limiter), runtime.NumGoroutine())
+			}
+		}()
+	}
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if !strings.HasSuffix(line, "/>") && strings.HasPrefix(line, "<BetradarLiveOdds") {
@@ -42,16 +51,14 @@ func Parse(c chan models.BetradarLiveOdds) {
 			case c <- res:
 			default:
 			}
-
 			go func(res models.BetradarLiveOdds) {
-			check:
-			//fmt.Print("\x1B[2K\r", runtime.NumGoroutine())
-			//lib.PrintProgress(runtime.NumGoroutine(), '.')
-				if runtime.NumGoroutine() < 50 {
-					//go controllers.UpsertMatches(res.Match)
-				} else {
-					time.Sleep(time.Millisecond * 300)
-					goto check
+				//lib.PrintProgress(runtime.NumGoroutine(), '.')
+				limiter <- true
+				if res.Status == nil {
+					return
+				}
+				if !*lib.Testing {
+					go controllers.UpsertMatches(res.Match, limiter)
 				}
 			}(res)
 			mainTag.Reset()
