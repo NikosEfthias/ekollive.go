@@ -4,14 +4,14 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"log"
-	"../../conf"
+	"../../lib"
 )
 
 var DB *gorm.DB
 
 func init() {
 	var err error
-	DB, err = gorm.Open("mysql", conf.Conf["betradar-db"]+"?parseTime=true")
+	DB, err = gorm.Open("mysql", (*lib.DB)+"?parseTime=true")
 	if nil != err {
 		log.Fatalln(err)
 	}

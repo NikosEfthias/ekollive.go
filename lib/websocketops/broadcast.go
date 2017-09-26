@@ -58,7 +58,7 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 }
 func StartBroadcast(c chan models.BetradarLiveOdds) {
 	for d := range c {
-		if lib.IsTesting() {
+		if *lib.Testing {
 			goto testing
 		}
 		if len(socketList) == 0 {

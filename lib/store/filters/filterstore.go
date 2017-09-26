@@ -2,7 +2,6 @@ package filters
 
 import (
 	"sync"
-	"flag"
 	"os"
 	"encoding/csv"
 	"fmt"
@@ -22,8 +21,8 @@ var testing bool
 func Init() {
 	flt = new(filters)
 	flt.filters = make(map[string]string)
-	flt.filtersFile = flag.Lookup("filtersFile").Value.String()
-	testing = lib.IsTesting()
+	flt.filtersFile = *lib.FiltersFile
+	testing = *lib.Testing
 
 	LoadAll()
 
@@ -82,6 +81,9 @@ func GetFiltersByMatchId(matchid string) (localfilters map[string]string) {
 	for _, filter := range strings.Split(filters, ";") {
 		//if there's specific filter override the * filter
 		fields := strings.Split(filter, "=")
+		if len(fields) < 2 {
+			continue
+		}
 		localfilters[fields[0]] = fields[1]
 	}
 	return
