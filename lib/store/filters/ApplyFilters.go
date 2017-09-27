@@ -2,7 +2,6 @@ package filters
 
 import (
 	"time"
-	"fmt"
 	"reflect"
 	"sync"
 )
@@ -10,7 +9,6 @@ import (
 func ApplyFilters(data interface{}, filters map[string]string) {
 
 	if len(filters) == 0 {
-		fmt.Println("no filter")
 		return
 	}
 	if testing {

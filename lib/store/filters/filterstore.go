@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"../../../lib"
 	"strings"
+	"errors"
 )
 
 type filters struct {
@@ -27,6 +28,32 @@ func Init() {
 	LoadAll()
 
 }
+func Add(filter string) error {
+	var filterParts = strings.Split(filter, ",")
+	if len(filterParts) != 3 {
+		return errors.New("filter format must be matchid,filterkey,filtervalue")
+	}
+	var mid, key, val = strings.TrimSpace(filterParts[0]), strings.TrimSpace(filterParts[1]), strings.TrimSpace(filterParts[2])
+	var filterOk bool
+	for reg, _ := range Filter {
+		if reg.MatchString(val) {
+			filterOk = true
+		}
+	}
+	if !filterOk {
+		return errors.New("Unsupported filter : [ " + val + " ]")
+	}
+	flt.Lock()
+	flt.filters[mid] += key + "=" + val + ";"
+	flt.Unlock()
+	f, err := os.OpenFile(flt.filtersFile, os.O_APPEND|os.O_WRONLY, 0644)
+	if nil != err {
+		return err
+	}
+	defer f.Close()
+	f.WriteString("\n" + strings.Join([]string{mid, key, val}, ","))
+	return nil
+}
 func LoadAll() {
 	const (
 		matchid = iota
@@ -38,7 +65,11 @@ func LoadAll() {
 	defer flt.Unlock()
 	f, err := os.Open(flt.filtersFile)
 	if nil != err {
-		panic("Cannot open filters file. Create at least an empty one")
+		f, err = os.Create(flt.filtersFile)
+		if nil != err {
+			panic(err)
+		}
+		//panic("Cannot open filters file. Create at least an empty one")
 	}
 	defer f.Close()
 	rdr := csv.NewReader(f)
