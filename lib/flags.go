@@ -26,7 +26,7 @@ func init() {
 func applyFlags() {
 	Profile = flag.Bool("profile", false, "cpu profiling")
 	DumpTags = flag.Bool("dt", false, "Dump raw xml tags to the stdout")
-	BAR = flag.Bool("BAR", false, "Diplay the limiter and goroutine numbers")
+	BAR = flag.Bool("b", false, "Diplay the limiter and goroutine numbers")
 	ProxyURL = flag.String("addr", "localhost:8080", "betradar Proxy url to use to get live data")
 	DB = flag.String("DB", "root:@tcp(127.0.0.1:3306)/test", "DB address to use")
 	FiltersFile = flag.String("filtersFile", "filters.csv", "Define a custom filters file")
