@@ -108,7 +108,7 @@ type Odd struct {
 	Type             *string `xml:"type,attr"json:"type,omitempty"`
 	Subtype          *string `xml:"subtype,attr"json:"subtype,omitempty"`
 	Ftr              *string `xml:"ftr,attr"json:"ftr,omitempty"`
-	Specialoddsvalue *string `xml:"specialoddsvalue"json:"specialoddsvalue,omitempty"`
+	Specialoddsvalue *string `xml:"specialoddsvalue,attr"json:"specialoddsvalue,omitempty"`
 	Freetext         *string `xml:"freetext,attr"json:"freetext,omitempty"`
 	Active           *int `xml:"active,attr"json:"active,omitempty"`
 	Changed          *string `xml:"changed,attr"json:"changed,omitempty"`
@@ -124,5 +124,5 @@ type OddsField struct {
 	Outcome     *string `xml:"outcome,attr"json:"outcome,omitempty"`
 	Voidfactor  *float64 `xml:"voidfactor,attr"json:"voidfactor,omitempty"`
 	Probability *string `xml:"probability,attr"json:"probability,omitempty"`
-	InnerValue  *float64 `xml:",innerxml"json:"value,omitempty"`
+	InnerValue  *float64  `xml:",chardata"json:"value,omitempty"`
 }
