@@ -2,7 +2,7 @@ package main
 
 import (
 	"net/http"
-	_ "net/http/pprof"
+	"net/http/pprof"
 
 	"./lib"
 	"./lib/betradar"
@@ -12,6 +12,7 @@ import (
 	"./models"
 	"log"
 	"fmt"
+	"./controllers/endpoints"
 )
 
 func init() {
@@ -21,6 +22,10 @@ func init() {
 func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", wso.StartWsServer()) //websocket server
+	mux.Handle("/filter/", http.StripPrefix("/filter", endpoints.Filter()))
+	if *lib.Profile {
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+	}
 	var c = make(chan models.BetradarLiveOdds)
 	go betradar.Parse(c)
 	go wso.StartBroadcast(c)
