@@ -8,7 +8,7 @@ import (
 
 var Filter = map[*regexp.Regexp]func(*reflect.Value, string){
 	regexp.MustCompile("^-$"):  filterDisableFunc,
-	regexp.MustCompile("^\\d"): setInt,
+	regexp.MustCompile("^\\d+$"): setInt,
 }
 
 func filterDisableFunc(val *reflect.Value, _ string) {
