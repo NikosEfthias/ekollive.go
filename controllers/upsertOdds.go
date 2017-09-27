@@ -6,13 +6,13 @@ import (
 	"../models/odd"
 	"../models/oddfieldType"
 	"sync"
-	"fmt"
 )
 
 var oddsLock sync.Mutex
 
 func UpsertOdds(match models.Match) {
-
+	oddsLock.Lock()
+	defer oddsLock.Unlock()
 	for _, o := range match.Odds {
 		//each odd
 		od := &oddType.Oddtype{
@@ -30,9 +30,7 @@ func UpsertOdds(match models.Match) {
 		//insert oddFields
 		func(od oddType.Oddtype, o models.Odd) {
 			for _, of := range o.OddsField {
-				if of.InnerValue != nil {
-					fmt.Println("upsertOdds.go:oddfieldinner", of.InnerValue)
-				} //each oddfield
+				//each oddfield
 				odf := &oddfieldType.Oddfieldtype{
 					Oddtypeid: od.Typeid,
 					Type:      of.Type,

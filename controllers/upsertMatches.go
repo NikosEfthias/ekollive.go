@@ -40,9 +40,12 @@ func UpsertMatches(matches []models.Match, limiter chan bool) {
 			Clockstop:             m.ClockStop,
 			Gamescore:             m.Gamescore,
 		}
+		_ = mtc
+		l.Lock()
 		match.Model.Where(match.Match{Matchid: mtc.Matchid}).Assign(mtc).FirstOrCreate(mtc)
+		l.Unlock()
 		if len(m.Odds) > 0 {
-			UpsertOdds(m)
+			go UpsertOdds(m)
 		}
 		if len(m.Card) > 0 {
 			UpsertCards(m)
