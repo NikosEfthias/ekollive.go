@@ -20,8 +20,8 @@ func StartWsServer() *http.ServeMux {
 		con, err := upg.Upgrade(w, r, nil)
 		if nil != err {
 			if !strings.Contains(err.Error(), "Origin") {
+				fmt.Println(err, r.Header.Get("origin")) //If its origin error don't bother printing
 			}
-			fmt.Println(err, r.Header.Get("origin")) //If its origin error don't bother printing
 			return
 		}
 		defer con.Close()
