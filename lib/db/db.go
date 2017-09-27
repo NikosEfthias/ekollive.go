@@ -19,5 +19,5 @@ func init() {
 	if nil != err {
 		log.Fatalln(err)
 	}
-	DB.LogMode(false)
+	//DB.LogMode(false)
 }
