@@ -6,11 +6,13 @@ import (
 	"../models/odd"
 	"../models/oddfieldType"
 	"sync"
+	"fmt"
 )
 
-func UpsertOdds(match models.Match, wg *sync.WaitGroup) {
-	defer wg.Done()
-	var subWg sync.WaitGroup
+var oddsLock sync.Mutex
+
+func UpsertOdds(match models.Match) {
+
 	for _, o := range match.Odds {
 		//each odd
 		od := &oddType.Oddtype{
@@ -26,11 +28,11 @@ func UpsertOdds(match models.Match, wg *sync.WaitGroup) {
 		}).FirstOrCreate(od)
 
 		//insert oddFields
-		subWg.Add(1)
-		go func(od oddType.Oddtype, o models.Odd) {
-			defer subWg.Done()
+		func(od oddType.Oddtype, o models.Odd) {
 			for _, of := range o.OddsField {
-				//each oddfield
+				if of.InnerValue != nil {
+					fmt.Println("upsertOdds.go:oddfieldinner", of.InnerValue)
+				} //each oddfield
 				odf := &oddfieldType.Oddfieldtype{
 					Oddtypeid: od.Typeid,
 					Type:      of.Type,
@@ -58,5 +60,4 @@ func UpsertOdds(match models.Match, wg *sync.WaitGroup) {
 			}
 		}(*od, o)
 	}
-	subWg.Wait()
 }

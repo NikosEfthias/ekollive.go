@@ -3,12 +3,13 @@ package controllers
 import "../models"
 import (
 	"../models/match"
-	"time"
 	"sync"
+	"time"
 )
 
+var l sync.Mutex
+
 func UpsertMatches(matches []models.Match, limiter chan bool) {
-	var wg sync.WaitGroup
 	time.Sleep(time.Millisecond * 500)
 	for _, m := range matches {
 		mtc := &match.Match{
@@ -41,18 +42,14 @@ func UpsertMatches(matches []models.Match, limiter chan bool) {
 		}
 		match.Model.Where(match.Match{Matchid: mtc.Matchid}).Assign(mtc).FirstOrCreate(mtc)
 		if len(m.Odds) > 0 {
-			wg.Add(1)
-			go UpsertOdds(m, &wg)
+			UpsertOdds(m)
 		}
 		if len(m.Card) > 0 {
-			wg.Add(1)
-			go UpsertCards(m, &wg)
+			UpsertCards(m)
 		}
 		if len(m.ScoreField) > 0 {
-			wg.Add(1)
-			go UpsertScores(m, &wg)
+			UpsertScores(m)
 		}
 	}
-	wg.Wait()
 	<-limiter
 }

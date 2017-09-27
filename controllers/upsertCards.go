@@ -1,21 +1,19 @@
 package controllers
 
 import (
-	"fmt"
 	"../models"
 	"../models/card"
 	"sync"
 )
 
 //insert card
+var cardsLock sync.Mutex
 
-func UpsertCards(match models.Match,wg *sync.WaitGroup) {
-	defer wg.Done()
+func UpsertCards(match models.Match) {
 	if len(match.Card) < 1 {
 		return
 	}
 	for _, c := range match.Card {
-		fmt.Println(c)
 		card.Model.Where(&card.Card{
 			Cardid: c.Id,
 		}).Assign(&card.Card{

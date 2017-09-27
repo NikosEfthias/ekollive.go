@@ -6,8 +6,9 @@ import (
 	"sync"
 )
 
-func UpsertScores(m models.Match, wg *sync.WaitGroup) {
-	defer wg.Done()
+var scoresLock sync.Mutex
+
+func UpsertScores(m models.Match) {
 	for _, s := range m.ScoreField {
 		score.Model.Where(&score.Score{
 			Scoreid: s.Id,
