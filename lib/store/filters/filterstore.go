@@ -2,18 +2,17 @@ package filters
 
 import (
 	"sync"
-	"os"
-	"encoding/csv"
-	"fmt"
 	"../../../lib"
 	"strings"
 	"errors"
+	filterModel "../../../models/filters"
+	"fmt"
+	"os"
 )
 
 type filters struct {
 	sync.Mutex
-	filtersFile string
-	filters     map[string]string
+	filters map[string]string
 }
 
 var flt *filters
@@ -22,7 +21,6 @@ var testing bool
 func Init() {
 	flt = new(filters)
 	flt.filters = make(map[string]string)
-	flt.filtersFile = *lib.FiltersFile
 	testing = *lib.Testing
 
 	LoadAll()
@@ -46,50 +44,36 @@ func Add(filter string) error {
 	flt.Lock()
 	flt.filters[mid] += key + "=" + val + ";"
 	flt.Unlock()
-	f, err := os.OpenFile(flt.filtersFile, os.O_APPEND|os.O_WRONLY, 0644)
-	if nil != err {
-		return err
+	currFilter := &filterModel.Filter{
+		Matchid: &mid,
+		Filter:  &val,
+		Key:     &key,
 	}
-	defer f.Close()
-	f.WriteString("\n" + strings.Join([]string{mid, key, val}, ","))
+	filterModel.Model.
+		Where(&filterModel.Filter{Matchid: &mid, Key: &key}).
+		Assign(currFilter).FirstOrCreate(&filterModel.Filter{})
 	return nil
 }
 func LoadAll() {
-	const (
-		matchid = iota
-		k
-		v
-	)
 	var filtersValid bool
+	_ = filtersValid
 	flt.Lock()
 	defer flt.Unlock()
-	f, err := os.Open(flt.filtersFile)
-	if nil != err {
-		f, err = os.Create(flt.filtersFile)
-		if nil != err {
-			panic(err)
-		}
-		//panic("Cannot open filters file. Create at least an empty one")
-	}
-	defer f.Close()
-	rdr := csv.NewReader(f)
-	for {
-		line, err := rdr.Read()
-		if nil != err {
-			break
-		}
-		var filter, value, mid = strings.TrimSpace(line[k]), strings.TrimSpace(line[v]), strings.TrimSpace(line[matchid])
-		for r, _ := range Filter {
-			if r.MatchString(value) {
+	var prevFilters = new([]*filterModel.Filter)
+	filterModel.Model.Find(prevFilters)
+	for _, f := range *prevFilters {
+
+		for r := range Filter {
+			if r.MatchString(*f.Filter) {
 				filtersValid = true
 				break
 			}
 		}
 		if !filtersValid {
-			fmt.Printf("invalid filter!! key=<%s> value=<%s>", filter, value)
+			fmt.Printf("invalid filter!! key=<%s> value=<%s>", *f.Key, *f.Filter)
 			os.Exit(-1)
 		}
-		flt.filters[mid] += filter + "=" + value + ";"
+		flt.filters[*f.Matchid] += *f.Key + "=" + *f.Filter + ";"
 	}
 }
 
