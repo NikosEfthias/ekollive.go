@@ -2,36 +2,32 @@ package lib
 
 import (
 	"flag"
-	"log"
 )
 
 var (
-	FiltersFile         *string
-	J                   *int
-	Testing             *bool
-	Port                *string
-	DB                  *string
-	Key                 *string
-	BetradarURL         *string
-	BetradarBookmakerId *string
-	BAR                 *bool
+	FiltersFile *string
+	J           *int
+	Testing     *bool
+	Port        *string
+	DB          *string
+	ProxyURL    *string
+	BAR         *bool
+	DumpTags    *bool
+	Profile     *bool
 )
 
 func init() {
 	if !flag.Parsed() {
 		applyFlags()
 		flag.Parse()
-		if *Key == "" || *BetradarBookmakerId == "" {
-			log.Fatalln("No betradar key or bookmakerid is present")
-		}
 	}
 
 }
 func applyFlags() {
+	Profile = flag.Bool("profile", false, "cpu profiling")
+	DumpTags = flag.Bool("dt", false, "Dump raw xml tags to the stdout")
 	BAR = flag.Bool("BAR", false, "Diplay the limiter and goroutine numbers")
-	BetradarBookmakerId = flag.String("BookmakerID", "", "Set betradar bookmaker id")
-	BetradarURL = flag.String("BetradarURL", "liveoddstest.betradar.com:1984", "betradar url to use to get live data")
-	Key = flag.String("KEY", "", "Betradar key to use")
+	ProxyURL = flag.String("addr", "localhost:8080", "betradar Proxy url to use to get live data")
 	DB = flag.String("DB", "root:@tcp(127.0.0.1:3306)/test", "DB address to use")
 	FiltersFile = flag.String("filtersFile", "filters.csv", "Define a custom filters file")
 	Port = flag.String("PORT", "9090", "Port number to listen on")

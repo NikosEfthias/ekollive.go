@@ -10,26 +10,29 @@ import (
 	"fmt"
 	"time"
 	"runtime"
+	"bufio"
 )
 
-var old = ""
+var limiter chan bool
 
-func Parse(c chan models.BetradarLiveOdds) {
-	con := Connect(*lib.BetradarURL)
-	Login(con)
-	scanner := GetBufferReader(con)
-	var mainTag bytes.Buffer
-	var start, flush bool
-	var limiter = make(chan bool, *lib.J)
+func init() {
+	limiter = make(chan bool, *lib.J)
 	if *lib.BAR {
 		go func() {
 			for {
 				time.Sleep(time.Millisecond * 500)
-				fmt.Printf("\rlimiter (%d)=> %d", len(limiter), runtime.NumGoroutine())
+				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)", len(limiter), runtime.NumGoroutine())
 			}
 		}()
 	}
+}
+func Parse(c chan models.BetradarLiveOdds) {
+	con := Connect(*lib.ProxyURL)
+	scanner := bufio.NewScanner(con)
+	var mainTag bytes.Buffer
+	var start, flush bool
 	for scanner.Scan() {
+
 		line := strings.TrimSpace(scanner.Text())
 		if !strings.HasSuffix(line, "/>") && strings.HasPrefix(line, "<BetradarLiveOdds") {
 			//start
@@ -51,14 +54,17 @@ func Parse(c chan models.BetradarLiveOdds) {
 			case c <- res:
 			default:
 			}
+			if *lib.DumpTags {
+
+				fmt.Println("\n\n", mainTag.String(), "\n\n")
+			}
 			go func(res models.BetradarLiveOdds) {
-				//lib.PrintProgress(runtime.NumGoroutine(), '.')
 				limiter <- true
 				if res.Status == nil {
 					return
 				}
 				if !*lib.Testing {
-					go controllers.UpsertMatches(res.Match, limiter)
+					controllers.UpsertMatches(res.Match, limiter)
 				}
 			}(res)
 			mainTag.Reset()

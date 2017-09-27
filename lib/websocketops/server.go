@@ -32,6 +32,7 @@ func StartWsServer() *http.ServeMux {
 			t, _, err := con.ReadMessage()
 			if t == -1 || nil != err {
 				DelConnection(con)
+				con.Close()
 				break
 			}
 		}

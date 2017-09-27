@@ -4,8 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net"
-
-	"../../lib"
 )
 
 type Ask struct {
@@ -34,8 +32,4 @@ func AskWithValues(id string, tp string, ts int64, key string) *Ask {
 		Timestamp:   ts,
 		Key:         key,
 	}
-}
-func Login(sock net.Conn) {
-	AskWithValues(*lib.BetradarBookmakerId, "login", 0, *lib.Key).Send(sock)
-	sock.Write([]byte("<StartAuto/>\n"))
 }
