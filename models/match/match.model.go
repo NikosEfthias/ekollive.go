@@ -3,7 +3,6 @@ package match
 import (
 	"github.com/jinzhu/gorm"
 	"../../lib/db"
-	"time"
 )
 
 type Match struct {
@@ -34,8 +33,7 @@ type Match struct {
 	Matchtimeextended     *string `gorm:"column:matchtimeextended"`
 	Setscores             *string `gorm:"column:setscores"`
 	Active                *int `gorm:"column:active;default:0"`
-	CreatedAt             time.Time `gorm:"column:createdAt"`
-	UpdatedAt             time.Time `gorm:"column:updatedAt"`
+	db.TimeFields
 }
 
 var Model *gorm.DB

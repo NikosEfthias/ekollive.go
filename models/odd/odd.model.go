@@ -2,7 +2,6 @@ package odd
 
 import (
 	"../../lib/db"
-	"time"
 	"github.com/jinzhu/gorm"
 )
 
@@ -17,8 +16,7 @@ type Odd struct {
 	Mostbalanced   *int `gorm:"default:0"`
 	Odd            *float64 `gorm:"default:1"`
 	Active         *int `gorm:"not null;"`
-	CreatedAt      time.Time `gorm:"column:createdAt"`
-	UpdatedAt      time.Time `gorm:"column:updatedAt"`
+	db.TimeFields
 }
 
 func init() {

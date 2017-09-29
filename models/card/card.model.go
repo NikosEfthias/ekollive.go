@@ -3,7 +3,6 @@ package card
 import "github.com/jinzhu/gorm"
 import (
 	"../../lib/db"
-	"time"
 )
 
 var Model *gorm.DB
@@ -20,8 +19,7 @@ type Card struct {
 	Matchtime   *string `gorm:"column:matchtime"`
 	Matchscore  *string `gorm:"column:matchscore"`
 	Matchstatus *string `gorm:"column:matchstatus"`
-	CreatedAt   time.Time `gorm:"column:createdAt"`
-	UpdatedAt   time.Time `gorm:"column:updatedAt"`
+	db.TimeFields
 }
 
 func init() {

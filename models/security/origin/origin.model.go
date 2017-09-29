@@ -8,8 +8,9 @@ import (
 var Model *gorm.DB
 
 type Allow struct {
-	ID       string `gorm:"column:id;primary_key"`
+	ID       string `gorm:"column:id;primary_key"json:"-"`
 	Password string `gorm:"default:null"json:"-"`
+	Admin    bool `gorm:"column:admin"json:"-"`
 }
 
 func (a *Allow) TableName() string {

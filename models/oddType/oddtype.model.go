@@ -3,7 +3,6 @@ package oddType
 import "github.com/jinzhu/gorm"
 import (
 	"../../lib/db"
-	"time"
 )
 
 var Model *gorm.DB
@@ -14,8 +13,7 @@ type Oddtype struct {
 	Type         *string
 	Typeid       *int
 	Oddtypevalue *string
-	UpdatedAt    time.Time    `gorm:"column:updatedAt"`
-	CreatedAt    time.Time    `gorm:"column:createdAt"`
+	db.TimeFields
 }
 
 func init() {

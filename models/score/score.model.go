@@ -2,7 +2,6 @@ package score
 
 import (
 	"github.com/jinzhu/gorm"
-	"time"
 	"../../lib/db"
 )
 
@@ -21,10 +20,12 @@ type Score struct {
 	Matchtime   *string `gorm:"column:matchtime"`
 	Matchscore  *string `gorm:"column:matchscore"`
 	Matchstatus *string `gorm:"column:matchstatus"`
-	CreatedAt   time.Time `gorm:"column:createdAt"`
-	UpdatedAt   time.Time `gorm:"column:updatedAt"`
+	db.TimeFields
 }
 
+func (scr *Score) TableName() string {
+	return "Scores"
+}
 func init() {
 	Model = db.DB.Model(&Score{})
 	Model.AutoMigrate(&Score{})
