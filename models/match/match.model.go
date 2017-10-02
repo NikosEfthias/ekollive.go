@@ -3,6 +3,7 @@ package match
 import (
 	"github.com/jinzhu/gorm"
 	"../../lib/db"
+	"time"
 )
 
 type Match struct {
@@ -33,7 +34,8 @@ type Match struct {
 	Matchtimeextended     *string `gorm:"column:matchtimeextended"`
 	Setscores             *string `gorm:"column:setscores"`
 	Active                *int `gorm:"column:active;default:0"`
-	db.TimeFields
+	CreatedAt             *time.Time `gorm:"column:createdAt;default:current_timestamp"`
+	UpdatedAt             time.Time `gorm:"column:updatedAt"`
 }
 
 var Model *gorm.DB
@@ -41,4 +43,15 @@ var Model *gorm.DB
 func init() {
 	Model = db.DB.Model(&Match{})
 	Model.AutoMigrate(&Match{})
+}
+
+func (t *Match) BeforeCreate() error {
+	tm := time.Now()
+	t.CreatedAt = &tm
+	t.UpdatedAt = time.Now()
+	return nil
+}
+func (t *Match) BeforeUpdate() error {
+	t.UpdatedAt = time.Now()
+	return nil
 }

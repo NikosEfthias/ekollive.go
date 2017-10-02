@@ -15,7 +15,7 @@ import (
 var DB *gorm.DB
 
 type TimeFields struct {
-	CreatedAt time.Time `gorm:"column:createdAt"`
+	CreatedAt *time.Time `gorm:"column:createdAt;default:current_timestamp"`
 	UpdatedAt time.Time `gorm:"column:updatedAt"`
 }
 
@@ -70,9 +70,7 @@ func Upsert(db *sql.DB, tableName string, doc interface{}) {
 		case time.Time:
 			val := field.Interface().(time.Time)
 			if val == (time.Time{}) || name == "updatedAt" {
-				fmt.Println(val.Unix() == time.Time{}.Unix())
-				fmt.Println(val, time.Time{})
-				val = time.Now()
+				val = time.Now().UTC()
 			}
 			values += "'" + val.Format("2006-01-02 15:04:05") + "',"
 			duplicate += "'" + val.Format("2006-01-02 15:04:05") + "',"
@@ -89,6 +87,7 @@ func Upsert(db *sql.DB, tableName string, doc interface{}) {
 	updateStr = strings.Replace(updateStr, "?", fields[:len(fields)-1], 1)
 	updateStr = strings.Replace(updateStr, "?", values[:len(values)-1], 1)
 	updateStr = strings.Replace(updateStr, "?", duplicate[:len(duplicate)-1], 1)
-	fmt.Println(db.Exec(updateStr))
+	//fmt.Println("\x1B[31m", updateStr, "x1B[0m")
+	db.Exec(updateStr)
 
 }

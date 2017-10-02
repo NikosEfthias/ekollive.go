@@ -3,6 +3,7 @@ package controllers
 import "../models"
 import (
 	"../models/match"
+	"../lib/db"
 	"sync"
 	"time"
 )
@@ -42,8 +43,15 @@ func UpsertMatches(matches []models.Match, limiter chan bool) {
 		}
 		_ = mtc
 		l.Lock()
-		match.Model.Where(match.Match{Matchid: mtc.Matchid}).Assign(mtc).FirstOrCreate(mtc)
+		db.Upsert(db.DB.DB(),"matches",mtc)
+		//match.Model.Where(match.Match{Matchid: mtc.Matchid}).Assign(mtc).FirstOrCreate(mtc)
 		l.Unlock()
+		//switch *m.Status {
+		//case "cancelbet":
+		//case "clearbet":
+		//default:
+		//
+		//}
 		if len(m.Odds) > 0 {
 			go UpsertOdds(m)
 		}
