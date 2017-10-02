@@ -43,7 +43,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool) {
 		}
 		_ = mtc
 		l.Lock()
-		db.Upsert(db.DB.DB(),"matches",mtc)
+		db.Upsert(db.DB.DB(), "matches", mtc)
 		//match.Model.Where(match.Match{Matchid: mtc.Matchid}).Assign(mtc).FirstOrCreate(mtc)
 		l.Unlock()
 		//switch *m.Status {
@@ -53,7 +53,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool) {
 		//
 		//}
 		if len(m.Odds) > 0 {
-			go UpsertOdds(m)
+			UpsertOdds(m)
 		}
 		if len(m.Card) > 0 {
 			UpsertCards(m)
