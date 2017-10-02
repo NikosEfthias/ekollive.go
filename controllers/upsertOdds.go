@@ -5,6 +5,7 @@ import (
 	"../models/oddType"
 	"../models/odd"
 	"../models/oddfieldType"
+	"../lib/db"
 	"sync"
 )
 
@@ -40,12 +41,23 @@ func UpsertOdds(match models.Match) {
 					Oddtypeid: od.Typeid,
 					Typeid:    of.Typeid,
 				}).FirstOrCreate(odf)
-				odd.Model.Where(&odd.Odd{
-					Oddid:          o.Id,
-					Matchid:        match.Matchid,
-					OddFieldTypeId: odf.Typeid,
-					OddTypeId:      od.Oddtypeid,
-				}).Assign(&odd.Odd{
+
+				//odd.Model.Where(&odd.Odd{
+				//	Oddid:          o.Id,
+				//	Matchid:        match.Matchid,
+				//	OddFieldTypeId: odf.Typeid,
+				//	OddTypeId:      od.Oddtypeid,
+				//}).Assign(&odd.Odd{
+				//	Oddid:          o.Id,
+				//	Matchid:        match.Matchid,
+				//	OddFieldTypeId: odf.Typeid,
+				//	OddTypeId:      od.Oddtypeid,
+				//	Odd:            of.InnerValue,
+				//	Specialvalue:   o.Specialoddsvalue,
+				//	Mostbalanced:   o.Mostbalanced,
+				//	Active:         of.Active,
+				//}).FirstOrCreate(&odd.Odd{})
+				data := &odd.Odd{
 					Oddid:          o.Id,
 					Matchid:        match.Matchid,
 					OddFieldTypeId: odf.Typeid,
@@ -54,7 +66,15 @@ func UpsertOdds(match models.Match) {
 					Specialvalue:   o.Specialoddsvalue,
 					Mostbalanced:   o.Mostbalanced,
 					Active:         of.Active,
-				}).FirstOrCreate(&odd.Odd{})
+				}
+				if *o.Active == 0 {
+					data.Active = o.Active
+					odd.Model.Where(&odd.Odd{
+						Oddid: o.Id,
+					}).Update("active", 0)
+				}
+				db.Upsert(db.DB.DB(), "odds", data)
+
 			}
 		}(*od, o)
 	}
