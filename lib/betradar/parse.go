@@ -20,7 +20,7 @@ func init() {
 	if *lib.BAR {
 		go func() {
 			for {
-				time.Sleep(time.Millisecond * 500)
+				time.Sleep(time.Millisecond * 100)
 				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)", len(limiter), runtime.NumGoroutine())
 			}
 		}()
