@@ -3,7 +3,8 @@ package db
 import "time"
 
 func (t *TimeFields) BeforeCreate() error {
-	t.CreatedAt = time.Now()
+	tm := time.Now()
+	t.CreatedAt = &tm
 	t.UpdatedAt = time.Now()
 	return nil
 }
