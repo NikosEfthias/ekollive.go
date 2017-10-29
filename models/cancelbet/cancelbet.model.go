@@ -2,23 +2,36 @@ package cancelbet
 
 import (
 	"github.com/jinzhu/gorm"
-	"time"
 	"../../lib/db"
+	"time"
 )
 
 var Model *gorm.DB
 
 type Cancelbet struct {
-	Id        int `gorm:"column:id;primary_key;"`
 	Matchid   *int `gorm:"column:matchId"`
 	Oddid     *int `gorm:"column:oddId"`
-	Starttime *time.Time `gorm:"column:startTime"`
-	Endtime   *time.Time `gorm:"column:endTime"`
-	Xmltime   *time.Time `gorm:"column:xmlTime"`
-	db.TimeFields
+	Starttime *int `gorm:"column:startTime;type:BIGINT"`
+	Endtime   *int `gorm:"column:endTime;type:BIGINT"`
+	CreatedAt *time.Time `gorm:"column:createdAt;default:current_timestamp"`
+	UpdatedAt time.Time `gorm:"column:updatedAt"`
 }
 
 func init() {
 	Model = db.DB.Model(&Cancelbet{})
-	Model.AutoMigrate(&Cancelbet{})
+	if !Model.HasTable(&Cancelbet{}) {
+		Model.CreateTable(&Cancelbet{})
+		Model.AddUniqueIndex("primary_key", "matchId", "oddId")
+	}
+}
+
+func (t *Cancelbet) BeforeCreate() error {
+	tm := time.Now()
+	t.CreatedAt = &tm
+	t.UpdatedAt = time.Now()
+	return nil
+}
+func (t *Cancelbet) BeforeUpdate() error {
+	t.UpdatedAt = time.Now()
+	return nil
 }

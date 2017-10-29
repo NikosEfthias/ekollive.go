@@ -37,6 +37,25 @@ func Get(tp, subtp *string, tpid *int) int {
 	}
 	return 0
 }
+func Set(o *oddType.Oddtype) int {
+	if val := Get(o.Type, o.Subtype, o.Typeid); val != 0 {
+		o.Oddtypeid = &val
+		return val
+	}
+
+	store.Lock()
+	defer store.Unlock()
+	oddType.Model.Where(&oddType.Oddtype{
+		Subtype: o.Subtype,
+		Type:    o.Type,
+		Typeid:  o.Typeid,
+	}).FirstOrCreate(o)
+	if o.Oddtypeid != nil {
+		store.store[returnKey(o.Type, o.Subtype, o.Typeid)] = *o.Oddtypeid
+		return *o.Oddtypeid
+	}
+	return 0
+}
 func returnKey(tp, subtp *string, tpid *int) string {
 	var key string
 

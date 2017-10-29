@@ -13,6 +13,7 @@ import (
 )
 
 var DB *gorm.DB
+var DB2 *gorm.DB
 
 type TimeFields struct {
 	CreatedAt *time.Time `gorm:"column:createdAt;default:current_timestamp"`
@@ -26,6 +27,14 @@ func init() {
 		log.Fatalln(err)
 	}
 	err = DB.DB().Ping()
+	if nil != err {
+		log.Fatalln(err)
+	}
+	DB2, err = gorm.Open("mysql", (*lib.DB2)+"?parseTime=true")
+	if nil != err {
+		log.Fatalln(err)
+	}
+	err = DB2.DB().Ping()
 	if nil != err {
 		log.Fatalln(err)
 	}

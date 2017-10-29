@@ -34,5 +34,25 @@ func Filter() *http.ServeMux {
 		}
 		responder.Encode(Success{true})
 	})
+	mux.HandleFunc("/refresh", func(w http.ResponseWriter, r *http.Request) {
+		filters.LoadAll()
+		responder := json.NewEncoder(w)
+		err := r.ParseForm()
+		if nil != err {
+			responder.Encode(Error{err})
+			return
+		}
+		key := r.Form.Get("key")
+		origin := r.Form.Get("origin")
+		if key == "" || origin == "" {
+			responder.Encode(Error{"Missing key or origin"})
+			return
+		}
+		if !endPointMethods.CheckToken(key, origin) {
+			responder.Encode(Error{"invalid token or origin"})
+			return
+		}
+		responder.Encode(Success{true})
+	})
 	return mux
 }

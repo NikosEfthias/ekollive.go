@@ -22,7 +22,7 @@ type Odd struct {
 }
 
 func init() {
-	Model = db.DB.Model(&Odd{})
+	Model = db.DB.Model(&Odd{}).Set("gorm:table_options", "ENGINE=MyISAM")
 	if !Model.HasTable(&Odd{}) {
 		Model.CreateTable(&Odd{})
 		Model.AddUniqueIndex("primary_key", "matchid", "oddid", "oddFieldTypeId", "oddTypeid")

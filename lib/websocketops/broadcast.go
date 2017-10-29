@@ -124,7 +124,14 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 						Outcomeid: odf.Typeid,
 						Active:    odf.Active,
 						Outcome:   odf.Type,
-						Odd:       odf.InnerValue,
+					}
+					if odf.InnerValue != nil && *odf.InnerValue!="" {
+						f, err := strconv.ParseFloat(*odf.InnerValue, 64)
+						if nil != err {
+							fmt.Println("cannot parse odd odd value=", f, err)
+							return
+						}
+						od_f.Odd = &f
 					}
 					o.Odds = append(o.Odds, od_f)
 				}

@@ -7,7 +7,7 @@ import (
 )
 
 var Filter = map[*regexp.Regexp]func(*reflect.Value, string){
-	regexp.MustCompile("^-$"):  filterDisableFunc,
+	regexp.MustCompile("^-$"):    filterDisableFunc,
 	regexp.MustCompile("^\\d+$"): setInt,
 }
 
@@ -21,8 +21,8 @@ func setInt(val *reflect.Value, filter string) {
 
 	switch val.Kind() {
 	case reflect.Ptr:
-		elem:=val.Type().Elem().Kind()
-		_=elem
+		elem := val.Type().Elem().Kind()
+		_ = elem
 		if val.Elem().CanSet() && val.Elem().Kind() == reflect.Int {
 			val.Elem().SetInt(int64(s))
 		} else if val.CanSet() && val.Type().Elem().Kind() == reflect.Int {

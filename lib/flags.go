@@ -13,6 +13,7 @@ var (
 	BAR      *bool
 	DumpTags *bool
 	Profile  *bool
+	DB2      *string
 )
 
 func init() {
@@ -28,6 +29,7 @@ func applyFlags() {
 	BAR = flag.Bool("b", false, "Diplay the limiter and goroutine numbers")
 	ProxyURL = flag.String("addr", "localhost:8080", "betradar Proxy url to use to get live data")
 	DB = flag.String("DB", "root:@tcp(127.0.0.1:3306)/test", "DB address to use")
+	DB2 = flag.String("DB2", "root:@tcp(127.0.0.1:3306)/test", "second db address to use")
 	Port = flag.String("PORT", "9090", "Port number to listen on")
 	J = flag.Int("j", 50, "Concurrent dbops count")
 	Testing = flag.Bool("testing", false, `controls testing mode

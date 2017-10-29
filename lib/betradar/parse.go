@@ -2,18 +2,22 @@ package betradar
 
 import (
 	"bytes"
-	"encoding/xml"
-	"strings"
-	"../../controllers"
 	"../../lib"
 	"../../models"
 	"fmt"
 	"time"
 	"runtime"
 	"bufio"
+	"os"
+	"strings"
+	"encoding/xml"
+	"../../controllers"
 )
 
 var limiter chan bool
+var mainTag bytes.Buffer
+var start, flush bool
+var data chan bool
 
 func init() {
 	limiter = make(chan bool, *lib.J)
@@ -25,21 +29,35 @@ func init() {
 			}
 		}()
 	}
+	data = make(chan bool)
 }
+
 func Parse(c chan models.BetradarLiveOdds) {
 	con := Connect(*lib.ProxyURL)
 	scanner := bufio.NewScanner(con)
-	var mainTag bytes.Buffer
-	var start, flush bool
-	for scanner.Scan() {
 
+	for {
+		go func() { data <- scanner.Scan() }()
+		select {
+		case a := <-data:
+			if !a {
+				time.Sleep(time.Second * 5)
+				fmt.Println("\n\n\nconnection dropped reconnecting")
+				os.Exit(0)
+			}
+		case <-time.After(time.Second * 30):
+			fmt.Println("\n\n\n\x1B[31m", "no data for 30 seconds restarting", "\x1B[0m\n\n\n")
+			os.Exit(0)
+		}
 		line := strings.TrimSpace(scanner.Text())
 		if !strings.HasSuffix(line, "/>") && strings.HasPrefix(line, "<BetradarLiveOdds") {
 			//start
+			//fmt.Println(line)
 			start = true
 			mainTag.WriteString(line)
 			continue
-		} else if strings.HasPrefix(line, "</BetradarLiveOdds") {
+		} else if start && strings.HasPrefix(line, "</BetradarLiveOdds") {
+			//fmt.Println(line)
 			mainTag.WriteString(line)
 			start = false
 			flush = true
@@ -49,7 +67,19 @@ func Parse(c chan models.BetradarLiveOdds) {
 		}
 		if flush {
 			var res = models.BetradarLiveOdds{}
-			xml.Unmarshal(mainTag.Bytes(), &res)
+
+			err := xml.Unmarshal(mainTag.Bytes(), &res)
+			if nil != err {
+				f, er := os.Create("errored.tags.dump.xml")
+				fmt.Println(er)
+				f.Write(mainTag.Bytes())
+				f.Close()
+				fmt.Println("\x1B[31mXMLParseError", err, "\x1B[0m")
+				mainTag.Reset()
+				flush = false
+				continue
+			}
+
 			select {
 			case c <- res:
 			default:
@@ -58,13 +88,15 @@ func Parse(c chan models.BetradarLiveOdds) {
 
 				fmt.Println("\n\n", mainTag.String(), "\n\n")
 			}
+
 			go func(res models.BetradarLiveOdds) {
 				limiter <- true
 				if res.Status == nil {
 					return
 				}
+
 				if !*lib.Testing {
-					controllers.UpsertMatches(res.Match, limiter)
+					controllers.UpsertMatches(res.Match, limiter, res)
 				}
 			}(res)
 			mainTag.Reset()

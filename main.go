@@ -1,18 +1,17 @@
 package main
 
 import (
+	"./models"
+	"fmt"
 	"net/http"
 	"net/http/pprof"
-
-	"./lib"
+	"log"
+	wso "./lib/websocketops"
 	"./lib/betradar"
+	"./controllers/endpoints"
+	"./lib"
 	"./lib/store/filters"
 	"./lib/store/oddids"
-	wso "./lib/websocketops"
-	"./models"
-	"log"
-	"fmt"
-	"./controllers/endpoints"
 )
 
 func init() {

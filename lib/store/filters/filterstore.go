@@ -20,7 +20,6 @@ var testing bool
 
 func Init() {
 	flt = new(filters)
-	flt.filters = make(map[string]string)
 	testing = *lib.Testing
 
 	LoadAll()
@@ -56,7 +55,7 @@ func Add(filter string) error {
 }
 func LoadAll() {
 	var filtersValid bool
-	_ = filtersValid
+	flt.filters = make(map[string]string)
 	flt.Lock()
 	defer flt.Unlock()
 	var prevFilters = new([]*filterModel.Filter)

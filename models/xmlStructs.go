@@ -45,42 +45,46 @@ type Match struct {
 type MatchInfo struct {
 	DateOfMatch *int `xml:"DateOfMatch"json:"DateOfMatch,omitempty"`
 	Sport struct {
-		Id    *string`xml:"id,attr"json:"id,omitempty"`
-		Value *string`xml:",innerxml"json:"value,omitempty"`
+		Id    *int`xml:"id,attr"json:"id,omitempty"`
+		Value *string`xml:",chardata"json:"value,omitempty"`
 	} `xml:"Sport"json:"Sport,omitempty"`
 	Category struct {
-		Id    *string`xml:"id,attr"json:"id,omitempty"`
-		Value *string`xml:",innerxml"json:"value,omitempty"`
+		Id    *int`xml:"id,attr"json:"id,omitempty"`
+		Value *string`xml:",chardata"json:"value,omitempty"`
 	} `xml:"Category"json:"Category,omitempty"`
 	Tournament struct {
-		Id    *string`xml:"id,attr"json:"id,omitempty"`
-		Value *string`xml:",innerxml"json:"value,omitempty"`
+		Id    *int`xml:"id,attr"json:"id,omitempty"`
+		Value *string`xml:",chardata"json:"value,omitempty"`
 	}`xml:"Tournament"json:"Tournament,omitempty"`
 	HomeTeam struct {
-		Id       *string`xml:"id,attr"json:"id,omitempty"`
-		Value    *string`xml:",innerxml"json:"value,omitempty"`
-		Uniqueid *string`xml:"uniqueid,attr"json:"uniqueid,omitempty"`
+		Id       *int`xml:"id,attr"json:"id,omitempty"`
+		Value    *string`xml:",chardata"json:"value,omitempty"`
+		Uniqueid *int`xml:"uniqueid,attr"json:"uniqueid,omitempty"`
 	}`xml:"HomeTeam"json:"HomeTeam,omitempty"`
 	AwayTeam struct {
-		Id       *string`xml:"id,attr"json:"id,omitempty"`
-		Value    *string`xml:",innerxml"json:"value,omitempty"`
-		Uniqueid *string`xml:"uniqueid,attr"json:"uniqueid,omitempty"`
+		Id       *int`xml:"id,attr"json:"id,omitempty"`
+		Value    *string`xml:",chardata"json:"value,omitempty"`
+		Uniqueid *int`xml:"uniqueid,attr"json:"uniqueid,omitempty"`
 	}`xml:"AwayTeam"json:"AwayTeam,omitempty"`
 	TvChannels []struct {
 		TvChannel *string`xml:"TvChannel"json:"TvChannel,omitempty"`
 	} `xml:"TvChannels"json:"TvChannels,omitempty"`
-	Streaming []struct {
-		Channel struct {
-			Id    *string`xml:"id,attr"json:"id,omitempty"`
-			Value *string`xml:",innerxml"json:"value,omitempty"`
-		} `xml:"Channel"json:"Channel,omitempty"`
-	} `xml:"Streaming"json:"Streaming,omitempty"`
-	CoverpageInfo struct {
-		Type struct {
-			Id    *string`xml:"id,attr"json:"id,omitempty"`
-			Value *string`xml:",innerxml"json:"value,omitempty"`
-		} `xml:"Type"json:"Type,omitempty"`
-	} `xml:"CoverpageInfo"json:"CoverpageInfo,omitempty"`
+	Infos []struct {
+		Type  string `xml:"type,attr"json:"type,omitempty"`
+		Value *string `xml:",chardata"json:"Value,omitempty"`
+	}`xml:"ExtraInfo>Info"json:"infos,omitempty"`
+	//Streaming []struct {
+	//	Channel struct {
+	//		Id    *string`xml:"id,attr"json:"id,omitempty"`
+	//		Value *string`xml:",chardata"json:"value,omitempty"`
+	//	} `xml:"Channel"json:"Channel,omitempty"`
+	//} `xml:"Streaming"json:"Streaming,omitempty"`
+	//CoverpageInfo struct {
+	//	Type struct {
+	//		Id    *string`xml:"id,attr"json:"id,omitempty"`
+	//		Value *string`xml:",chardata"json:"value,omitempty"`
+	//	} `xml:"Type"json:"Type,omitempty"`
+	//} `xml:"CoverpageInfo"json:"CoverpageInfo,omitempty"`
 }
 
 type Card struct {
@@ -124,5 +128,5 @@ type OddsField struct {
 	Outcome     *string `xml:"outcome,attr"json:"outcome,omitempty"`
 	Voidfactor  *float64 `xml:"voidfactor,attr"json:"voidfactor,omitempty"`
 	Probability *string `xml:"probability,attr"json:"probability,omitempty"`
-	InnerValue  *float64  `xml:",chardata"json:"value,omitempty"`
+	InnerValue  *string  `xml:",chardata"json:"value,omitempty"`
 }
