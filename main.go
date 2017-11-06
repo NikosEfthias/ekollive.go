@@ -1,17 +1,17 @@
 package main
 
 import (
-	"./models"
-	"fmt"
-	"net/http"
-	"net/http/pprof"
-	"log"
-	wso "./lib/websocketops"
-	"./lib/betradar"
 	"./controllers/endpoints"
 	"./lib"
+	"./lib/betradar"
 	"./lib/store/filters"
 	"./lib/store/oddids"
+	wso "./lib/websocketops"
+	"./models"
+	"fmt"
+	"log"
+	"net/http"
+	"net/http/pprof"
 )
 
 func init() {
@@ -22,6 +22,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", wso.StartWsServer()) //websocket server
 	mux.Handle("/filter/", http.StripPrefix("/filter", endpoints.Filter()))
+	mux.Handle("/command/", http.StripPrefix("/command", endpoints.Proxy()))
 	if *lib.Profile {
 		mux.HandleFunc("/debug/pprof/", pprof.Index)
 	}
@@ -29,5 +30,5 @@ func main() {
 	go betradar.Parse(c)
 	go wso.StartBroadcast(c)
 	fmt.Println("server listenin on port ", *lib.Port)
-	log.Fatalln(http.ListenAndServe(":" + *lib.Port, mux))
+	log.Fatalln(http.ListenAndServe(":"+*lib.Port, mux))
 }
