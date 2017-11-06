@@ -1,12 +1,14 @@
 package websocketops
 
 import (
-	"net/http"
-	ws "github.com/gorilla/websocket"
-	"time"
 	"fmt"
-	"../../models/security/origin"
+	"net/http"
 	"strings"
+	"time"
+
+	"../../lib"
+	"../../models/security/origin"
+	ws "github.com/gorilla/websocket"
 )
 
 func StartWsServer() *http.ServeMux {
@@ -19,6 +21,9 @@ func StartWsServer() *http.ServeMux {
 		}
 		con, err := upg.Upgrade(w, r, nil)
 		if nil != err {
+			if *lib.Testing {
+				fmt.Println(err, r.Header.Get("origin"))
+			}
 			if !strings.Contains(err.Error(), "Origin") {
 				fmt.Println(err, r.Header.Get("origin")) //If its origin error don't bother printing
 			}
