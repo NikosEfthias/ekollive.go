@@ -45,8 +45,8 @@ func Parse(c chan models.BetradarLiveOdds) {
 				fmt.Println("\n\n\nconnection dropped reconnecting")
 				os.Exit(0)
 			}
-		case <-time.After(time.Second * 30):
-			fmt.Println("\n\n\n\x1B[31m", "no data for 30 seconds restarting", "\x1B[0m\n\n\n")
+		case <-time.After(time.Second * 50):
+			fmt.Println("\n\n\n\x1B[31m", "no data for 50 seconds restarting", "\x1B[0m\n\n\n")
 			os.Exit(0)
 		}
 		line := strings.TrimSpace(scanner.Text())
