@@ -100,9 +100,9 @@ func Parse(c chan models.BetradarLiveOdds) {
 					return
 				}
 
-				if !*lib.Testing {
+
 					controllers.UpsertMatches(res.Match, limiter, res)
-				}
+
 			}(res)
 			mainTag.Reset()
 			flush = false
