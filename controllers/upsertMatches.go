@@ -3,6 +3,7 @@ package controllers
 import "../models"
 import (
 	"../models/match"
+	"../lib"
 	"../models/clearbet"
 	"../models/cancelbet"
 	"../lib/db"
@@ -53,6 +54,11 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 		l.Unlock()
 
 		switch strings.ToLower(*betradar.Status) {
+		case "ended":
+			if *lib.Testing {
+				fmt.Printf("match ended matchid=%d", *m.Matchid)
+			}
+			db.DB.DB().Exec("UPDATE odds SET active=0 where matchId=?", *m.Matchid)
 		case "meta":
 			fmt.Println("coming from meta", *m.MatchInfo.DateOfMatch, *m.MatchInfo.Category.Value)
 			db.Upsert(db.DB2.DB(), sportsBook.Sport{}.Tablename(), &sportsBook.Sport{SportId: m.MatchInfo.Sport.Id, Lang: "en"})
