@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"../../lib"
 	"../../models"
+	"../db"
 	"fmt"
 	"time"
 	"runtime"
@@ -47,6 +48,8 @@ func Parse(c chan models.BetradarLiveOdds) {
 			}
 		case <-time.After(time.Second * 50):
 			fmt.Println("\n\n\n\x1B[31m", "no data for 50 seconds restarting", "\x1B[0m\n\n\n")
+			db.DB.DB().Exec("update matches set betstatus='stoppped' where betstatus='started'")
+			db.DB.DB().Exec("update odd set active='0' WHERE active='1'")
 			os.Exit(0)
 		}
 		line := strings.TrimSpace(scanner.Text())
