@@ -7,6 +7,7 @@ import (
 	"../models/oddfieldType"
 	"../lib/store/oddids"
 	"../lib/db"
+	"../lib"
 	"sync"
 	"strconv"
 	"fmt"
@@ -30,6 +31,10 @@ func UpsertOdds(match models.Match) {
 		}
 		//insert oddFields
 		func(od oddType.Oddtype, o models.Odd) {
+			if *lib.LockOdds {
+				oddsLock.Lock()
+				defer oddsLock.Unlock()
+			}
 			if o.Active != nil && *o.Active == 0 {
 				odd.Model.Where(&odd.Odd{Oddid: o.Id}).Update("active", 0)
 				return
