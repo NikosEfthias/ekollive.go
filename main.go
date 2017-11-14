@@ -8,6 +8,7 @@ import (
 	"./lib/store/oddids"
 	wso "./lib/websocketops"
 	"./models"
+	_ "./models/language"
 	"fmt"
 	"log"
 	"net/http"
