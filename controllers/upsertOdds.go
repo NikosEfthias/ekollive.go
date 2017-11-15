@@ -1,17 +1,17 @@
 package controllers
 
 import (
-	"../models"
-	"../models/oddType"
-	"../models/odd"
-	"../models/oddfieldType"
-	"../lib/store/oddids"
-	"../lib/db"
 	"../lib"
-	"sync"
-	"strconv"
+	"../lib/db"
+	"../lib/store/oddids"
+	"../models"
+	"../models/odd"
+	"../models/oddType"
+	"../models/oddfieldType"
 	"fmt"
 	"github.com/sanity-io/litter"
+	"strconv"
+	"sync"
 )
 
 var oddsLock sync.Mutex
@@ -56,7 +56,7 @@ func UpsertOdds(match models.Match) {
 				_, err := db.DB.DB().Exec("UPDATE `odds` SET active=0 where matchid=? and oddFieldTypeId=? and oddTypeId=?",
 					*match.Matchid, *odf.Typeid, *od.Oddtypeid)
 				if nil != err {
-					fmt.Println("\x1B[0m", "error updating old odds", err, "\x1B[0m")
+					//fmt.Println("\x1B[0m", "error updating old odds", err, "\x1B[0m")
 				}
 				db.Upsert(db.DB.DB(), "oddfieldtypes", odf)
 				data := &odd.Odd{
