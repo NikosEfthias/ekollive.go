@@ -25,7 +25,7 @@ func init() {
 	Model = db.DB.Model(&Odd{})
 	if !Model.HasTable(&Odd{}) {
 		Model.CreateTable(&Odd{})
-		Model.AddUniqueIndex("primary_key", "matchid", "oddid", "oddFieldTypeId", "oddTypeid")
+		Model.AddUniqueIndex("primary_key", "matchid", "oddid", "oddFieldTypeId", "oddTypeid","specialValue")
 	}
 }
 
