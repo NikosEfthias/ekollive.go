@@ -1,17 +1,17 @@
 package repl
 
 type Reply struct {
-	Active      *int `json:"active,omitempty"filter:"active"`
-	Matchid     *int `json:"matchid,omitempty"filter:"matchid"`
-	Betstatus   *string `json:"betstatus,omitempty"filter:"betstatus"`
-	Matchstatus *string `json:"matchstatus,omitempty"filter:"matchstatus"`
-	Service     *int `json:"service,omitempty"filter:"service"`
-	Tiebreak    *string `json:"tiebreak,omitempty"filter:"tiebreak"`
-	Score       *Score `json:"score,omitempty"`
-	Cards       *Cards `json:"cards,omitempty"`
-	Time        *Time `json:"time,omitempty"`
+	Active      *int     `json:"active,omitempty"filter:"active"`
+	Matchid     *int     `json:"matchid,omitempty"filter:"matchid"`
+	Betstatus   *string  `json:"betstatus,omitempty"filter:"betstatus"`
+	Matchstatus *string  `json:"matchstatus,omitempty"filter:"matchstatus"`
+	Service     *int     `json:"service,omitempty"filter:"service"`
+	Tiebreak    *string  `json:"tiebreak,omitempty"filter:"tiebreak"`
+	Score       *Score   `json:"score,omitempty"`
+	Cards       *Cards   `json:"cards,omitempty"`
+	Time        *Time    `json:"time,omitempty"`
 	Corners     *Corners `json:"corners,omitempty"`
-	Odds        []*Odd `json:"odds,omitempty"`
+	Odds        []*Odd   `json:"odds,omitempty"`
 }
 type Corners struct {
 	Home *int `json:"home,omitempty"filter:"home"`
@@ -22,20 +22,21 @@ type Time struct {
 	Remainingtime         *string `json:"remainingtime,omitempty"filter:"remainingtime"`
 	RemainingTimeinPeriod *string `json:"remainingtimeinperiod,omitempty"filter:"remainingtimeinperiod"`
 	MatchtimeExtended     *string `json:"matchtimeextended,omitempty"filter:"matchtimeextended"`
-	Clockstop             *int `json:"clockstop,omitempty"filter:"clockstop"`
+	Clockstop             *int    `json:"clockstop,omitempty"filter:"clockstop"`
 }
 type Odd struct {
-	OddsId   int `json:"oddsid,omitempty"filter:"oddsid"`
-	OddsType int `json:"oddstype,omitempty"filter:"oddstype"`
-	Special  *string `json:"special,omitempty"filter:"special"`
-	Active   *int `json:"active,omitempty"filter:"odds.active"`
-	Typename *string `json:"typename,omitempty"filter:"typename"`
-	Odds     []*OddField `json:"odds,omitempty"`
+	OddsId       int         `json:"oddsid,omitempty"filter:"oddsid"`
+	OddsType     int         `json:"oddstype,omitempty"filter:"oddstype"`
+	Special      *string     `json:"special,omitempty"filter:"special"`
+	Active       *int        `json:"active,omitempty"filter:"odds.active"`
+	Typename     *string     `json:"typename,omitempty"filter:"typename"`
+	Mostbalanced *int        `json:"mostbalanced,omitempty"filter:"mostbalanced"`
+	Odds         []*OddField `json:"odds,omitempty"`
 }
 type OddField struct {
-	Outcomeid *int `json:"outcomeid,omitempty"filter:"outcomeid"`
-	Active    *int `json:"active,omitempty"filter:"odds.odds.active"`
-	Outcome   *string `json:"outcome,omitempty"filter:"outcome"`
+	Outcomeid *int     `json:"outcomeid,omitempty"filter:"outcomeid"`
+	Active    *int     `json:"active,omitempty"filter:"odds.odds.active"`
+	Outcome   *string  `json:"outcome,omitempty"filter:"outcome"`
 	Odd       *float64 `json:"odd,omitempty"filter:"odd"`
 }
 type Score struct {

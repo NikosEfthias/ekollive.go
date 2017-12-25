@@ -13,6 +13,11 @@ type Oddtype struct {
 	Type         *string
 	Typeid       *int
 	Oddtypevalue *string
+	Status       *int     `gorm:"type:TINYINT;default:1"`
+	MinStake     *float64 `gorm:"default:0;column:minStake"`
+	MaxStake     *float64 `gorm:"default:0;column:maxStake"`
+	MaxPay       *float64 `gorm:"default:0;column:maxPay"`
+	ListOrder    *float64 `gorm:"default:0;column:listOrder"`
 	db.TimeFields
 }
 

@@ -9,9 +9,13 @@ import (
 type Oddfieldtype struct {
 	Oddtypeid *int
 	Typeid    *int
-	Type      *string `gorm:"not null"`
+	Type      *string    `gorm:"not null"`
+	MinStake  *float64   `gorm:"default:0;column:minStake"`
+	MaxStake  *float64   `gorm:"default:0;column:maxStake"`
+	MaxPay    *float64   `gorm:"default:0;column:maxPay"`
+	ListOrder *float64   `gorm:"default:0;column:listOrder"`
 	CreatedAt *time.Time `gorm:"column:createdAt;default:current_timestamp"`
-	UpdatedAt time.Time `gorm:"column:updatedAt"`
+	UpdatedAt time.Time  `gorm:"column:updatedAt"`
 }
 
 var Model *gorm.DB
