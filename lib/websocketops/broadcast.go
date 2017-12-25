@@ -1,21 +1,22 @@
 package websocketops
 
 import (
-	"github.com/gorilla/websocket"
-	"sync"
-	"../../models"
-	"../../models/repl"
-	"../store/oddids"
 	"encoding/json"
 	"fmt"
-	"strings"
-	"time"
-	"../../lib"
 	"strconv"
+	"strings"
+	"sync"
+	"time"
+
+	"../../lib"
+	"../../models"
+	"../../models/repl"
 	"../store/filters"
+	"../store/oddids"
+	"github.com/gorilla/websocket"
 )
 
-var socketList [] *websocket.Conn
+var socketList []*websocket.Conn
 var l sync.Mutex
 
 func Broadcast(data []byte) {
@@ -112,12 +113,13 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 					continue
 				}
 				o := &repl.Odd{
-					OddsId:   *odd.Id,
-					OddsType: oddids.Get(odd.Type, odd.Subtype, odd.Typeid),
-					Special:  odd.Specialoddsvalue,
-					Active:   odd.Active,
-					Typename: odd.Freetext,
-					Odds:     make([]*repl.OddField, 0),
+					OddsId:       *odd.Id,
+					OddsType:     oddids.Get(odd.Type, odd.Subtype, odd.Typeid),
+					Special:      odd.Specialoddsvalue,
+					Active:       odd.Active,
+					Typename:     odd.Freetext,
+					Mostbalanced: odd.Mostbalanced,
+					Odds:         make([]*repl.OddField, 0),
 				}
 				for _, odf := range odd.OddsField {
 					od_f := &repl.OddField{
@@ -125,7 +127,7 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 						Active:    odf.Active,
 						Outcome:   odf.Type,
 					}
-					if odf.InnerValue != nil && *odf.InnerValue!="" {
+					if odf.InnerValue != nil && *odf.InnerValue != "" {
 						f, err := strconv.ParseFloat(*odf.InnerValue, 64)
 						if nil != err {
 							fmt.Println("cannot parse odd odd value=", f, err)

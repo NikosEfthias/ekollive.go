@@ -1,18 +1,18 @@
 package betradar
 
 import (
-	"bytes"
+	"../../controllers"
 	"../../lib"
 	"../../models"
 	"../db"
-	"fmt"
-	"time"
-	"runtime"
 	"bufio"
-	"os"
-	"strings"
+	"bytes"
 	"encoding/xml"
-	"../../controllers"
+	"fmt"
+	"os"
+	"runtime"
+	"strings"
+	"time"
 )
 
 var limiter chan bool
@@ -100,8 +100,7 @@ func Parse(c chan models.BetradarLiveOdds) {
 					return
 				}
 
-
-					controllers.UpsertMatches(res.Match, limiter, res)
+				controllers.UpsertMatches(res.Match, limiter, res)
 
 			}(res)
 			mainTag.Reset()
