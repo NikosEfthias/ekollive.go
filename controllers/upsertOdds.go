@@ -53,11 +53,11 @@ func UpsertOdds(match models.Match) {
 					Type:      of.Type,
 					Typeid:    of.Typeid,
 				}
-				_, err := db.DB.DB().Exec("UPDATE `odds` SET active=0 where matchid=? and oddFieldTypeId=? and oddTypeId=?",
-					*match.Matchid, *odf.Typeid, *od.Oddtypeid)
-				if nil != err {
-					fmt.Println("\x1B[0m", "error updating old odds", err, "\x1B[0m")
-				}
+				////////_, err := db.DB.DB().Exec("UPDATE `odds` SET active=0 where matchid=? and oddFieldTypeId=? and oddTypeId=?",
+				////////	*match.Matchid, *odf.Typeid, *od.Oddtypeid)
+				////////if nil != err {
+				////////	fmt.Println("\x1B[0m", "error updating old odds", err, "\x1B[0m")
+				////////}
 				db.Upsert(db.DB.DB(), "oddfieldtypes", odf)
 				data := &odd.Odd{
 					Oddid:          o.Id,
