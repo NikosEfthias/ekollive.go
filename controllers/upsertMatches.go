@@ -2,18 +2,19 @@ package controllers
 
 import "../models"
 import (
-	"../models/match"
-	"../lib"
-	"../models/clearbet"
-	"../models/cancelbet"
-	"../lib/db"
-	"sync"
+	"fmt"
+	"strconv"
 	"strings"
+	"sync"
+	"time"
+
+	"../lib"
+	"../lib/db"
+	"../models/cancelbet"
+	"../models/clearbet"
+	"../models/match"
 	"../models/odd"
 	"../models/sportsBook"
-	"fmt"
-	"time"
-	"strconv"
 )
 
 var l sync.Mutex
@@ -48,11 +49,6 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			Clockstop:             m.ClockStop,
 			Gamescore:             m.Gamescore,
 		}
-		_ = mtc
-		l.Lock()
-		db.Upsert(db.DB.DB(), "matches", mtc)
-		l.Unlock()
-
 		switch strings.ToLower(*betradar.Status) {
 		case "ended":
 			if *lib.Testing {
@@ -61,27 +57,40 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			db.DB.DB().Exec("UPDATE odds SET active=0 where matchId=?", *m.Matchid)
 		case "meta":
 			fmt.Println("coming from meta", *m.MatchInfo.DateOfMatch, *m.MatchInfo.Category.Value)
-			db.Upsert(db.DB2.DB(), sportsBook.Sport{}.Tablename(), &sportsBook.Sport{SportId: m.MatchInfo.Sport.Id, Lang: "en"})
+			db.Upsert(db.DB2.DB(), sportsBook.Sport{}.Tablename(), &sportsBook.Sport{
+				SportId:   m.MatchInfo.Sport.Id,
+				SportName: m.MatchInfo.Sport.Value,
+				Lang:      "en"})
 			db.Upsert(db.DB2.DB(), sportsBook.Category{}.Tablename(), &sportsBook.Category{
-				SportId:    m.MatchInfo.Sport.Id,
-				Categoryid: m.MatchInfo.Category.Id,
-				Lang:       "en",
+				SportId:      m.MatchInfo.Sport.Id,
+				Categoryid:   m.MatchInfo.Category.Id,
+				CategoryName: m.MatchInfo.Category.Value,
+				Lang:         "en",
 			})
 			db.Upsert(db.DB2.DB(), sportsBook.Tournament{}.Tablename(), &sportsBook.Tournament{
+				SportId:        m.MatchInfo.Sport.Id,
+				Categoryid:     m.MatchInfo.Category.Id,
+				TournamentId:   m.MatchInfo.Tournament.Id,
+				TournamentName: m.MatchInfo.Tournament.Value,
+				Lang:           "en",
+			})
+			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
+				Lang:         "en",
+				CompId:       m.MatchInfo.AwayTeam.Id,
+				Comp2Id:      m.MatchInfo.AwayTeam.Uniqueid,
 				SportId:      m.MatchInfo.Sport.Id,
 				Categoryid:   m.MatchInfo.Category.Id,
 				TournamentId: m.MatchInfo.Tournament.Id,
+				CompName:     m.MatchInfo.AwayTeam.Value,
+			})
+			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
 				Lang:         "en",
-			})
-			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
-				Lang:    "en",
-				CompId:  m.MatchInfo.AwayTeam.Id,
-				Comp2Id: m.MatchInfo.AwayTeam.Uniqueid,
-			})
-			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
-				Lang:    "en",
-				CompId:  m.MatchInfo.HomeTeam.Id,
-				Comp2Id: m.MatchInfo.HomeTeam.Uniqueid,
+				CompId:       m.MatchInfo.HomeTeam.Id,
+				Comp2Id:      m.MatchInfo.HomeTeam.Uniqueid,
+				SportId:      m.MatchInfo.Sport.Id,
+				Categoryid:   m.MatchInfo.Category.Id,
+				TournamentId: m.MatchInfo.Tournament.Id,
+				CompName:     m.MatchInfo.HomeTeam.Value,
 			})
 			data := sportsBook.Match{
 				SportId:      m.MatchInfo.Sport.Id,
@@ -94,7 +103,9 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				LiveActive:   "1",
 				//PeriodLength:
 			}
-
+			mtc.SportId = m.MatchInfo.Sport.Id
+			mtc.CategoryId = m.MatchInfo.Category.Id
+			mtc.TournamentId = m.MatchInfo.Tournament.Id
 			for _, extra := range m.MatchInfo.Infos {
 				if extra.Type == "PeriodLength" && extra.Value != nil {
 
@@ -152,6 +163,10 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				UpsertScores(m)
 			}
 		}
+		//upsert
+		l.Lock()
+		db.Upsert(db.DB.DB(), "matches", mtc)
+		l.Unlock()
 	}
 	<-limiter
 }

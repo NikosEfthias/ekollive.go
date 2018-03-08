@@ -21,22 +21,20 @@ var l sync.Mutex
 
 func Broadcast(data []byte) {
 	l.Lock()
-	defer l.Unlock()
 	for _, c := range socketList {
 		if nil != c.WriteMessage(websocket.TextMessage, data) {
 			DelConnection(c)
+
 		}
+		time.Sleep(time.Millisecond)
 	}
+	l.Unlock()
 }
 
 func AddConnection(c *websocket.Conn) {
-	l.Lock()
-	defer l.Unlock()
 	socketList = append(socketList, c)
 }
 func DelConnection(c *websocket.Conn) {
-	l.Lock()
-	defer l.Unlock()
 	for i, sock := range socketList {
 		if sock == c {
 			socketList = append(socketList[:i], socketList[i+1:]...)

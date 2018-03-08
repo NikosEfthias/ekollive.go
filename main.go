@@ -1,6 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net/http"
+	"net/http/pprof"
+
 	"./controllers/endpoints"
 	"./lib"
 	"./lib/betradar"
@@ -9,10 +14,6 @@ import (
 	wso "./lib/websocketops"
 	"./models"
 	_ "./models/language"
-	"fmt"
-	"log"
-	"net/http"
-	"net/http/pprof"
 )
 
 func init() {

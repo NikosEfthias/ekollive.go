@@ -1,15 +1,17 @@
 package db
 
 import (
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"log"
-	"../../lib"
 	"database/sql"
+	"fmt"
+	"log"
+	"os"
 	"reflect"
 	"strings"
 	"time"
-	"fmt"
+
+	"../../lib"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 var DB *gorm.DB
@@ -17,9 +19,58 @@ var DB2 *gorm.DB
 
 type TimeFields struct {
 	CreatedAt *time.Time `gorm:"column:createdAt;default:current_timestamp"`
-	UpdatedAt time.Time `gorm:"column:updatedAt"`
+	UpdatedAt time.Time  `gorm:"column:updatedAt"`
 }
 
+func checkPingDBS(db1, db2 *sql.DB) {
+	var c1, c2 = make(chan bool), make(chan bool)
+	go func(c1, c2 chan bool) {
+		go func() {
+			for {
+				<-time.After(time.Second)
+				err := db1.Ping()
+				if nil != err {
+					c1 <- true
+					continue
+				}
+				c1 <- false
+			}
+		}()
+		go func() {
+			for {
+				<-time.After(time.Second)
+				err := db2.Ping()
+				if nil != err {
+					c2 <- true
+					continue
+				}
+				c2 <- false
+			}
+		}()
+	}(c1, c2)
+	for {
+		select {
+		case d := <-c1:
+			if d {
+				fmt.Println("the first db doesnt respond")
+				os.Exit(1)
+			}
+		case <-time.After(time.Second * 3):
+			fmt.Println("the first db doesnt respond")
+			os.Exit(1)
+		}
+		select {
+		case d := <-c2:
+			if d {
+				fmt.Println("the second db doesnt respond")
+				os.Exit(1)
+			}
+		case <-time.After(time.Second * 3):
+			fmt.Println("the second db doesnt respond")
+			os.Exit(1)
+		}
+	}
+}
 func init() {
 	var err error
 	DB, err = gorm.Open("mysql", (*lib.DB)+"?parseTime=true")
@@ -38,6 +89,7 @@ func init() {
 	if nil != err {
 		log.Fatalln(err)
 	}
+
 	//DB.LogMode(false)
 }
 func Upsert(db *sql.DB, tableName string, doc interface{}) {

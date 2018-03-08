@@ -8,16 +8,18 @@ import (
 var Model *gorm.DB
 
 type Oddtype struct {
-	Oddtypeid    *int `gorm:"primary_key;not null"`
-	Subtype      *string
-	Type         *string
-	Typeid       *int
-	Oddtypevalue *string
-	Status       *int     `gorm:"type:TINYINT;default:1"`
-	MinStake     *float64 `gorm:"default:0;column:minStake"`
-	MaxStake     *float64 `gorm:"default:0;column:maxStake"`
-	MaxPay       *float64 `gorm:"default:0;column:maxPay"`
-	ListOrder    *float64 `gorm:"default:0;column:listOrder"`
+	Oddtypeid    *int     `gorm:"primary_key;not null" json:"oddtypeid"`
+	Subtype      *string  `json:"subtype"`
+	Type         *string  `json:"type"`
+	Typeid       *int     `json:"typeid"`
+	Sportid      *int     `json:"sportid"`
+	Oddtypevalue *string  `json:"oddtypevalue"`
+	Status       *int     `gorm:"type:TINYINT;default:1" json:"status"`
+	MinStake     *float64 `gorm:"default:null;column:minStake" json:"min_stake"`
+	BetLimit     *float64 `gorm:"default:null;column:betLimit" json:"bet_limit"`
+	MaxStake     *float64 `gorm:"default:null;column:maxStake" json:"max_stake"`
+	MaxPay       *float64 `gorm:"default:null;column:maxPay" json:"max_pay"`
+	ListOrder    *float64 `gorm:"default:null;column:listOrder" json:"list_order"`
 	db.TimeFields
 }
 

@@ -1,17 +1,18 @@
 package sportsBook
 
 import (
-	"time"
 	"database/sql"
-	"reflect"
-	"strings"
 	"fmt"
+	"reflect"
 	"strconv"
+	"strings"
+	"time"
 )
 
 type Sport struct {
-	SportId *int `gorm:"column:sportId"`
-	Lang    string `gorm:"lang;default:en"`
+	SportId   *int    `gorm:"column:sportId"`
+	SportName *string `gorm:"column:sportName"`
+	Lang      string  `gorm:"lang;default:en"`
 }
 
 func (spr Sport) Tablename() string {
@@ -19,9 +20,10 @@ func (spr Sport) Tablename() string {
 }
 
 type Category struct {
-	SportId    *int `gorm:"column:sportId"`
-	Categoryid *int `gorm:"column:categoryId"`
-	Lang       string `gorm:"column:lang;default:en"`
+	SportId      *int    `gorm:"column:sportId"`
+	Categoryid   *int    `gorm:"column:categoryId"`
+	CategoryName *string `gorm:"column:categoryName"`
+	Lang         string  `gorm:"column:lang;default:en"`
 }
 
 func (c Category) Tablename() string {
@@ -29,10 +31,11 @@ func (c Category) Tablename() string {
 }
 
 type Tournament struct {
-	SportId      *int `gorm:"column:sportId"`
-	Categoryid   *int `gorm:"column:categoryId"`
-	TournamentId *int `gorm:"column:tournamentId"`
-	Lang         string `gorm:"column:lang;default:en"`
+	SportId        *int    `gorm:"column:sportId"`
+	Categoryid     *int    `gorm:"column:categoryId"`
+	TournamentId   *int    `gorm:"column:tournamentId"`
+	TournamentName *string `gorm:"column:tournamentName"`
+	Lang           string  `gorm:"column:lang;default:en"`
 }
 
 func (c Tournament) Tablename() string {
@@ -40,9 +43,13 @@ func (c Tournament) Tablename() string {
 }
 
 type Competitor struct {
-	CompId  *int `gorm:"column:compId"`
-	Comp2Id *int `gorm:"column:CompId2"`
-	Lang    string `gorm:"column:lang;default:en"`
+	CompId       *int    `gorm:"column:compId"`
+	Comp2Id      *int    `gorm:"column:CompId2"`
+	SportId      *int    `gorm:"column:sportId"`
+	Categoryid   *int    `gorm:"column:categoryId"`
+	TournamentId *int    `gorm:"column:tournamentId"`
+	CompName     *string `gorm:"column:compName"`
+	Lang         string  `gorm:"column:lang;default:en"`
 }
 
 func (c Competitor) Tablename() string {
@@ -50,14 +57,14 @@ func (c Competitor) Tablename() string {
 }
 
 type Match struct {
-	SportId      *int `gorm:"column:sportId"`
-	Categoryid   *int `gorm:"column:categoryId"`
-	TournamentId *int `gorm:"column:tournamentId"`
-	Matchid      *int `gorm:"column:matchId"`
-	Comp1        *int `gorm:"column:comp1"`
-	Comp2        *int `gorm:"column:comp2"`
+	SportId      *int   `gorm:"column:sportId"`
+	Categoryid   *int   `gorm:"column:categoryId"`
+	TournamentId *int   `gorm:"column:tournamentId"`
+	Matchid      *int   `gorm:"column:matchId"`
+	Comp1        *int   `gorm:"column:comp1"`
+	Comp2        *int   `gorm:"column:comp2"`
 	Matchdate    string `gorm:"column:matchDate"`
-	PeriodLength *int `gorm:"column:periodLength"`
+	PeriodLength *int   `gorm:"column:periodLength"`
 	LiveActive   string `gorm:"column:liveActive"`
 }
 

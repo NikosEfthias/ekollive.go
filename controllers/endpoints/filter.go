@@ -1,10 +1,10 @@
 package endpoints
 
 import (
-	"net/http"
-	"encoding/json"
 	"../../lib/endPointMethods"
 	"../../lib/store/filters"
+	"encoding/json"
+	"net/http"
 )
 
 func Filter() *http.ServeMux {
