@@ -81,6 +81,8 @@ func init() {
 	if nil != err {
 		log.Fatalln(err)
 	}
+	DB.DB().SetMaxIdleConns(4)
+	DB.DB().SetMaxOpenConns(100)
 	DB2, err = gorm.Open("mysql", (*lib.DB2)+"?parseTime=true")
 	if nil != err {
 		log.Fatalln(err)
@@ -90,6 +92,8 @@ func init() {
 		log.Fatalln(err)
 	}
 
+	DB2.DB().SetMaxIdleConns(4)
+	DB.DB().SetMaxOpenConns(100)
 	//DB.LogMode(false)
 }
 func Upsert(db *sql.DB, tableName string, doc interface{}) {

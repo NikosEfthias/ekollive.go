@@ -1,10 +1,6 @@
 package betradar
 
 import (
-	"../../controllers"
-	"../../lib"
-	"../../models"
-	"../db"
 	"bufio"
 	"bytes"
 	"encoding/xml"
@@ -13,6 +9,11 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"../../controllers"
+	"../../lib"
+	"../../models"
+	"../db"
 )
 
 var limiter chan bool
@@ -25,7 +26,7 @@ func init() {
 	if *lib.BAR {
 		go func() {
 			for {
-				time.Sleep(time.Millisecond * 100)
+				time.Sleep(time.Millisecond * 10)
 				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)", len(limiter), runtime.NumGoroutine())
 			}
 		}()
@@ -38,6 +39,7 @@ func Parse(c chan models.BetradarLiveOdds) {
 	scanner := bufio.NewScanner(con)
 
 	for {
+		time.Sleep(time.Millisecond * 10)
 		go func() { data <- scanner.Scan() }()
 		select {
 		case a := <-data:
@@ -49,7 +51,7 @@ func Parse(c chan models.BetradarLiveOdds) {
 				os.Exit(0)
 			}
 		case <-time.After(time.Second * 50):
-			fmt.Println("\n\n\n\x1B[31m", "no data for 50 seconds restarting", "\x1B[0m\n\n\n")
+			fmt.Println("\n\n\n\x1B[31m", "no data for 50 seconds restarting", "\x1B[0m")
 			db.DB.DB().Exec("update matches set betstatus='stopped' where betstatus='started'")
 			db.DB.DB().Exec("update odds set active='0' WHERE active='1'")
 			os.Exit(0)
