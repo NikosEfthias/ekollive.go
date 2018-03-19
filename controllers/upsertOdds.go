@@ -1,6 +1,10 @@
 package controllers
 
 import (
+	"fmt"
+	"strconv"
+	"sync"
+
 	"../lib"
 	"../lib/db"
 	"../lib/store/oddids"
@@ -8,10 +12,7 @@ import (
 	"../models/odd"
 	"../models/oddType"
 	"../models/oddfieldType"
-	"fmt"
 	"github.com/sanity-io/litter"
-	"strconv"
-	"sync"
 )
 
 var oddsLock sync.Mutex
@@ -26,7 +27,7 @@ func UpsertOdds(match models.Match) {
 			Oddtypevalue: o.Freetext,
 		}
 		if oddids.Set(od) == 0 {
-			fmt.Println("\n\nan error occured inserting the odd\n")
+			fmt.Println("\n\nan error occured inserting the odd")
 			litter.Dump(od)
 		}
 		//insert oddFields

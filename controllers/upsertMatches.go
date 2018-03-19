@@ -51,6 +51,22 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 		}
 		switch strings.ToLower(*betradar.Status) {
 		case "ended":
+			fallthrough
+		case "abandoned":
+			fallthrough
+		case "interrupted":
+			fallthrough
+		case "walkover":
+			fallthrough
+		case "walkover1":
+			fallthrough
+		case "walkover2":
+			fallthrough
+		case "retired":
+			fallthrough
+		case "retired1":
+			fallthrough
+		case "retired2":
 			if *lib.Testing {
 				fmt.Printf("match ended matchid=%d", *m.Matchid)
 			}
@@ -82,6 +98,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				Categoryid:   m.MatchInfo.Category.Id,
 				TournamentId: m.MatchInfo.Tournament.Id,
 				CompName:     m.MatchInfo.AwayTeam.Value,
+				//TODO:  capitalize the first letters
 			})
 			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
 				Lang:         "en",
@@ -91,6 +108,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				Categoryid:   m.MatchInfo.Category.Id,
 				TournamentId: m.MatchInfo.Tournament.Id,
 				CompName:     m.MatchInfo.HomeTeam.Value,
+				//TODO:  capitalize the first letters
 			})
 			data := sportsBook.Match{
 				SportId:      m.MatchInfo.Sport.Id,
