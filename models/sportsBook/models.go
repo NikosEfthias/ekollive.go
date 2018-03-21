@@ -12,7 +12,8 @@ import (
 type Sport struct {
 	SportId   *int    `gorm:"column:sportId"`
 	SportName *string `gorm:"column:sportName"`
-	Lang      string  `gorm:"lang;default:en"`
+	Lang      string  `gorm:"column:lang;default:en"`
+	ListOrder *int    `gorm:"column:listOrder"`
 }
 
 func (spr Sport) Tablename() string {
@@ -24,6 +25,7 @@ type Category struct {
 	Categoryid   *int    `gorm:"column:categoryId"`
 	CategoryName *string `gorm:"column:categoryName"`
 	Lang         string  `gorm:"column:lang;default:en"`
+	ListOrder    *int    `gorm:"column:listOrder"`
 }
 
 func (c Category) Tablename() string {
@@ -36,6 +38,7 @@ type Tournament struct {
 	TournamentId   *int    `gorm:"column:tournamentId"`
 	TournamentName *string `gorm:"column:tournamentName"`
 	Lang           string  `gorm:"column:lang;default:en"`
+	ListOrder      *int    `gorm:"column:listOrder"`
 }
 
 func (c Tournament) Tablename() string {

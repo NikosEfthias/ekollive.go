@@ -39,7 +39,6 @@ func Parse(c chan models.BetradarLiveOdds) {
 	scanner := bufio.NewScanner(con)
 
 	for {
-		time.Sleep(time.Millisecond * 10)
 		go func() { data <- scanner.Scan() }()
 		select {
 		case a := <-data:
@@ -93,17 +92,16 @@ func Parse(c chan models.BetradarLiveOdds) {
 			}
 			if *lib.DumpTags {
 
-				fmt.Println("\n\n", mainTag.String(), "\n\n")
+				fmt.Println("\n\n", mainTag.String())
 			}
 
+			time.Sleep(time.Millisecond * 10)
 			go func(res models.BetradarLiveOdds) {
 				limiter <- true
 				if res.Status == nil {
 					return
 				}
-
 				controllers.UpsertMatches(res.Match, limiter, res)
-
 			}(res)
 			mainTag.Reset()
 			flush = false

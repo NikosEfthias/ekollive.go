@@ -1,6 +1,5 @@
 package controllers
 
-import "../models"
 import (
 	"fmt"
 	"strconv"
@@ -10,11 +9,12 @@ import (
 
 	"../lib"
 	"../lib/db"
+	"../models"
 	"../models/cancelbet"
 	"../models/clearbet"
 	"../models/match"
 	"../models/odd"
-	"../models/sportsBook"
+	"../models/sportsbook"
 )
 
 var l sync.Mutex
@@ -76,11 +76,13 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			db.Upsert(db.DB2.DB(), sportsBook.Sport{}.Tablename(), &sportsBook.Sport{
 				SportId:   m.MatchInfo.Sport.Id,
 				SportName: m.MatchInfo.Sport.Value,
+				ListOrder: m.MatchInfo.Sport.Id,
 				Lang:      "en"})
 			db.Upsert(db.DB2.DB(), sportsBook.Category{}.Tablename(), &sportsBook.Category{
 				SportId:      m.MatchInfo.Sport.Id,
 				Categoryid:   m.MatchInfo.Category.Id,
 				CategoryName: m.MatchInfo.Category.Value,
+				ListOrder:    m.MatchInfo.Category.Id,
 				Lang:         "en",
 			})
 			db.Upsert(db.DB2.DB(), sportsBook.Tournament{}.Tablename(), &sportsBook.Tournament{
@@ -88,6 +90,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				Categoryid:     m.MatchInfo.Category.Id,
 				TournamentId:   m.MatchInfo.Tournament.Id,
 				TournamentName: m.MatchInfo.Tournament.Value,
+				ListOrder:      m.MatchInfo.Tournament.Id,
 				Lang:           "en",
 			})
 			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
@@ -97,8 +100,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				SportId:      m.MatchInfo.Sport.Id,
 				Categoryid:   m.MatchInfo.Category.Id,
 				TournamentId: m.MatchInfo.Tournament.Id,
-				CompName:     m.MatchInfo.AwayTeam.Value,
-				//TODO:  capitalize the first letters
+				CompName:     lib.Capitalize(m.MatchInfo.AwayTeam.Value),
 			})
 			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
 				Lang:         "en",
@@ -107,8 +109,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				SportId:      m.MatchInfo.Sport.Id,
 				Categoryid:   m.MatchInfo.Category.Id,
 				TournamentId: m.MatchInfo.Tournament.Id,
-				CompName:     m.MatchInfo.HomeTeam.Value,
-				//TODO:  capitalize the first letters
+				CompName:     lib.Capitalize(m.MatchInfo.HomeTeam.Value),
 			})
 			data := sportsBook.Match{
 				SportId:      m.MatchInfo.Sport.Id,
