@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"reflect"
@@ -71,6 +72,9 @@ func checkPingDBS(db1, db2 *sql.DB) {
 		}
 	}
 }
+
+var queryWriter io.Writer
+
 func init() {
 	var err error
 	DB, err = gorm.Open("mysql", (*lib.DB)+"?parseTime=true")
@@ -91,7 +95,12 @@ func init() {
 	if nil != err {
 		log.Fatalln(err)
 	}
-
+	if os.Getenv("PrintUpserts") == "print" {
+		queryWriter, err = os.OpenFile("queries.dump", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+		if nil != err {
+			log.Fatalln(err)
+		}
+	}
 	DB2.DB().SetMaxIdleConns(4)
 	DB.DB().SetMaxOpenConns(100)
 	//DB.LogMode(false)
@@ -152,6 +161,9 @@ func Upsert(db *sql.DB, tableName string, doc interface{}) {
 	updateStr = strings.Replace(updateStr, "?", fields[:len(fields)-1], 1)
 	updateStr = strings.Replace(updateStr, "?", values[:len(values)-1], 1)
 	updateStr = strings.Replace(updateStr, "?", duplicate[:len(duplicate)-1], 1)
+	if os.Getenv("PrintUpserts") == "print" {
+		fmt.Fprintln(queryWriter, updateStr)
+	}
 	//fmt.Println("\x1B[31m", updateStr, "x1B[0m")
 	db.Exec(updateStr)
 

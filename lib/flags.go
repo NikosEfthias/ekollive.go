@@ -15,6 +15,7 @@ var (
 	Profile  *bool
 	DB2      *string
 	LockOdds *bool
+	Time     *int
 )
 
 func init() {
@@ -33,7 +34,8 @@ func applyFlags() {
 	DB2 = flag.String("DB2", "root:@tcp(127.0.0.1:3306)/test", "second db address to use")
 	Port = flag.String("PORT", "9090", "Port number to listen on")
 	J = flag.Int("j", 50, "Concurrent dbops count")
-	LockOdds = flag.Bool("lockodds",false,"Whether to use mutex on odd inserts or not, When db cannot handle a lot of inserts use this.")
+	Time = flag.Int("timeout", 60, "timeout for goroutines")
+	LockOdds = flag.Bool("lockodds", false, "Whether to use mutex on odd inserts or not, When db cannot handle a lot of inserts use this.")
 	Testing = flag.Bool("testing", false, `controls testing mode
 	if the app is running on dry run mode following ops will not take place
 		- nothing will be inserted into the db

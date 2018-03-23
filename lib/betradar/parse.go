@@ -23,6 +23,13 @@ var data chan bool
 
 func init() {
 	limiter = make(chan bool, *lib.J)
+	go func() {
+		if *lib.Time == 0 {
+			return
+		}
+		<-time.After(time.Minute * time.Duration(*lib.Time))
+		os.Exit(0)
+	}()
 	if *lib.BAR {
 		go func() {
 			for {
