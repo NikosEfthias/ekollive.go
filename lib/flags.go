@@ -5,17 +5,18 @@ import (
 )
 
 var (
-	J        *int
-	Testing  *bool
-	Port     *string
-	DB       *string
-	ProxyURL *string
-	BAR      *bool
-	DumpTags *bool
-	Profile  *bool
-	DB2      *string
-	LockOdds *bool
-	Time     *int
+	J           *int
+	Testing     *bool
+	Port        *string
+	DB          *string
+	ProxyURL    *string
+	BAR         *bool
+	DumpTags    *bool
+	Profile     *bool
+	DB2         *string
+	LockOdds    *bool
+	Time        *int
+	DisableMeta *bool
 )
 
 func init() {
@@ -35,6 +36,7 @@ func applyFlags() {
 	Port = flag.String("PORT", "9090", "Port number to listen on")
 	J = flag.Int("j", 50, "Concurrent dbops count")
 	Time = flag.Int("timeout", 60, "timeout for goroutines")
+	DisableMeta = flag.Bool("disableMeta", false, " disable printing meta")
 	LockOdds = flag.Bool("lockodds", false, "Whether to use mutex on odd inserts or not, When db cannot handle a lot of inserts use this.")
 	Testing = flag.Bool("testing", false, `controls testing mode
 	if the app is running on dry run mode following ops will not take place

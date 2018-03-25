@@ -24,9 +24,8 @@ func Broadcast(data []byte) {
 	for _, c := range socketList {
 		if nil != c.WriteMessage(websocket.TextMessage, data) {
 			DelConnection(c)
-
+			continue
 		}
-		time.Sleep(time.Millisecond)
 	}
 	l.Unlock()
 }

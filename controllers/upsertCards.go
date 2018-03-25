@@ -1,9 +1,10 @@
 package controllers
 
 import (
+	"sync"
+
 	"../models"
 	"../models/card"
-	"sync"
 )
 
 //insert card

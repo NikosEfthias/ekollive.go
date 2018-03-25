@@ -70,9 +70,15 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			if *lib.Testing {
 				fmt.Printf("match ended matchid=%d", *m.Matchid)
 			}
+			if m.Status != nil {
+				fmt.Println(*betradar.Status, *m.Status)
+			}
 			db.DB.DB().Exec("UPDATE odds SET active=0 where matchId=?", *m.Matchid)
 		case "meta":
-			fmt.Println("coming from meta", *m.MatchInfo.DateOfMatch, *m.MatchInfo.Category.Value)
+			if *lib.DisableMeta {
+				goto disableMeta
+			}
+			//fmt.Println("coming from meta", *m.MatchInfo.DateOfMatch, *m.MatchInfo.Category.Value)
 			db.Upsert(db.DB2.DB(), sportsBook.Sport{}.Tablename(), &sportsBook.Sport{
 				SportId:   m.MatchInfo.Sport.Id,
 				SportName: m.MatchInfo.Sport.Value,
@@ -183,9 +189,8 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			}
 		}
 		//upsert
-		l.Lock()
+	disableMeta:
 		db.Upsert(db.DB.DB(), "matches", mtc)
-		l.Unlock()
 	}
 	<-limiter
 }

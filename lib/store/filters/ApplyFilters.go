@@ -1,9 +1,8 @@
 package filters
 
 import (
-	"time"
 	"reflect"
-	"sync"
+	"time"
 )
 
 func ApplyFilters(data interface{}, filters map[string]string) {
@@ -19,40 +18,31 @@ func ApplyFilters(data interface{}, filters map[string]string) {
 	if value.Kind() == reflect.Ptr && (value.Elem().Kind() == reflect.Struct || value.Elem().Kind() == reflect.Slice) {
 		value = value.Elem()
 	}
-	var wg sync.WaitGroup
 	switch value.Kind() {
 	case reflect.Struct:
-		wg.Add(1)
-		go loopStruct(&value, filters, &wg)
+		loopStruct(&value, filters)
 	case reflect.Slice:
-		wg.Add(1)
-		go loopSlice(&value, filters, &wg)
+		loopSlice(&value, filters)
 	}
-	wg.Wait()
 }
 
-func loopStruct(val *reflect.Value, filters map[string]string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func loopStruct(val *reflect.Value, filters map[string]string) {
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
 		switch {
 		case field.Kind() == reflect.Struct:
-			wg.Add(1)
-			go loopStruct(&field, filters, wg)
+			loopStruct(&field, filters)
 		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Struct:
-			wg.Add(1)
 			var elem = field.Elem()
-			go loopStruct(&elem, filters, wg)
+			loopStruct(&elem, filters)
 		case field.Kind() == reflect.Slice:
-			wg.Add(1)
-			go loopSlice(&field, filters, wg)
+			loopSlice(&field, filters)
 		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Slice:
-			wg.Add(1)
 			var elem = field.Elem()
-			go loopSlice(&elem, filters, wg)
+			loopSlice(&elem, filters)
 		default:
 			var tag = reflect.TypeOf(val.Interface()).Field(i).Tag.Get("filter")
-			flt, ok := filters[tag];
+			flt, ok := filters[tag]
 			if !ok {
 				continue
 			}
@@ -64,25 +54,20 @@ func loopStruct(val *reflect.Value, filters map[string]string, wg *sync.WaitGrou
 
 	}
 }
-func loopSlice(val *reflect.Value, filters map[string]string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func loopSlice(val *reflect.Value, filters map[string]string) {
 	for i := 0; i < val.Len(); i++ {
 		var field = val.Index(i)
 		switch {
 		case field.Kind() == reflect.Struct:
-			wg.Add(1)
-			go loopStruct(&field, filters, wg)
+			loopStruct(&field, filters)
 		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Struct:
-			wg.Add(1)
 			var elem = field.Elem()
-			go loopStruct(&elem, filters, wg)
+			loopStruct(&elem, filters)
 		case field.Kind() == reflect.Slice:
-			wg.Add(1)
-			go loopSlice(&field, filters, wg)
+			loopSlice(&field, filters)
 		case field.Kind() == reflect.Ptr && field.Elem().Kind() == reflect.Slice:
-			wg.Add(1)
 			var elem = field.Elem()
-			go loopSlice(&elem, filters, wg)
+			loopSlice(&elem, filters)
 		}
 	}
 }
