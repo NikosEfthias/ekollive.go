@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"../../lib"
@@ -17,17 +16,25 @@ import (
 )
 
 var socketList []*websocket.Conn
-var l sync.Mutex
+var sockData = make(chan []byte)
 
-func Broadcast(data []byte) {
-	l.Lock()
-	for _, c := range socketList {
-		if nil != c.WriteMessage(websocket.TextMessage, data) {
-			DelConnection(c)
-			continue
+func init() {
+	go Broadcast(sockData)
+}
+func BroadCastNow(data []byte) {
+	sockData <- data
+}
+func Broadcast(d chan []byte) {
+	for {
+		data := <-d
+		for _, c := range socketList {
+			if nil != c.WriteMessage(websocket.TextMessage, data) {
+				c.Close()
+				DelConnection(c)
+				continue
+			}
 		}
 	}
-	l.Unlock()
 }
 
 func AddConnection(c *websocket.Conn) {
@@ -37,6 +44,7 @@ func DelConnection(c *websocket.Conn) {
 	for i, sock := range socketList {
 		if sock == c {
 			socketList = append(socketList[:i], socketList[i+1:]...)
+			break
 		}
 	}
 }
@@ -66,6 +74,15 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 	testing:
 		if checkStatuses(d) {
 			//check match.Status to publish or not
+			continue
+		}
+		if *d.Status == "alive" && len(d.Match) == 0 {
+			dt, err := json.Marshal(d)
+			if nil != err {
+				fmt.Println(err)
+				continue
+			}
+			sockData <- dt
 			continue
 		}
 		for _, m := range d.Match {
@@ -144,7 +161,7 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 				fmt.Println(err)
 				continue
 			}
-			go Broadcast(dt)
+			sockData <- dt
 		}
 	}
 }

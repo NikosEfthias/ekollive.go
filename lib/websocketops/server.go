@@ -32,15 +32,11 @@ func StartWsServer() *http.ServeMux {
 		defer con.Close()
 		var old = time.Now()
 		_ = old
-		l.Lock()
 		AddConnection(con)
-		l.Unlock()
 		for {
 			t, _, err := con.ReadMessage()
 			if t == -1 || nil != err {
-				l.Lock()
 				DelConnection(con)
-				l.Unlock()
 				break
 			}
 		}

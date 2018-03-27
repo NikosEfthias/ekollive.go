@@ -29,7 +29,7 @@ func Proxy() *http.ServeMux {
 			responder.Encode(Error{"invalid token or origin"})
 			return
 		}
-		wso.Broadcast([]byte(command))
+		wso.BroadCastNow([]byte(command))
 		responder.Encode(Success{true})
 
 	})

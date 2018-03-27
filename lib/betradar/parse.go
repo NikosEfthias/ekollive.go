@@ -23,13 +23,6 @@ var data chan bool
 
 func init() {
 	limiter = make(chan bool, *lib.J)
-	go func() {
-		if *lib.Time == 0 {
-			return
-		}
-		<-time.After(time.Minute * time.Duration(*lib.Time))
-		os.Exit(0)
-	}()
 	if *lib.BAR {
 		go func() {
 			for {
@@ -69,6 +62,10 @@ func Parse(c chan models.BetradarLiveOdds) {
 			start = true
 			mainTag.WriteString(line)
 			continue
+		} else if strings.HasSuffix(line, "/>") && strings.HasPrefix(line, "<BetradarLiveOdds") {
+			mainTag.WriteString(line)
+			start = false
+			flush = true
 		} else if start && strings.HasPrefix(line, "</BetradarLiveOdds") {
 			//fmt.Println(line)
 			mainTag.WriteString(line)
@@ -98,11 +95,12 @@ func Parse(c chan models.BetradarLiveOdds) {
 			default:
 			}
 			if *lib.DumpTags {
-
 				fmt.Println("\n\n", mainTag.String())
 			}
-
 			time.Sleep(time.Millisecond * 10)
+			if res.Status != nil && *res.Status == "alive" {
+				goto alive
+			}
 			go func(res models.BetradarLiveOdds) {
 				limiter <- true
 				if res.Status == nil {
@@ -110,6 +108,7 @@ func Parse(c chan models.BetradarLiveOdds) {
 				}
 				controllers.UpsertMatches(res.Match, limiter, res)
 			}(res)
+		alive:
 			mainTag.Reset()
 			flush = false
 		}
