@@ -1,8 +1,13 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
-	"strconv"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -14,7 +19,6 @@ import (
 	"../models/clearbet"
 	"../models/match"
 	"../models/odd"
-	"../models/sportsbook"
 )
 
 var l sync.Mutex
@@ -75,75 +79,104 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			}
 			db.DB.DB().Exec("UPDATE odds SET active=0 where matchId=?", *m.Matchid)
 		case "meta":
-			if *lib.DisableMeta {
-				goto disableMeta
+			// if *lib.DisableMeta {
+			// 	goto disableMeta
+			// }
+			// //fmt.Println("coming from meta", *m.MatchInfo.DateOfMatch, *m.MatchInfo.Category.Value)
+			// db.Upsert(db.DB2.DB(), sportsBook.Sport{}.Tablename(), &sportsBook.Sport{
+			// 	SportId:   m.MatchInfo.Sport.Id,
+			// 	SportName: m.MatchInfo.Sport.Value,
+			// 	ListOrder: m.MatchInfo.Sport.Id,
+			// 	Lang:      "en"})
+			// db.Upsert(db.DB2.DB(), sportsBook.Category{}.Tablename(), &sportsBook.Category{
+			// 	SportId:      m.MatchInfo.Sport.Id,
+			// 	Categoryid:   m.MatchInfo.Category.Id,
+			// 	CategoryName: m.MatchInfo.Category.Value,
+			// 	ListOrder:    m.MatchInfo.Category.Id,
+			// 	Lang:         "en",
+			// })
+			// db.Upsert(db.DB2.DB(), sportsBook.Tournament{}.Tablename(), &sportsBook.Tournament{
+			// 	SportId:        m.MatchInfo.Sport.Id,
+			// 	Categoryid:     m.MatchInfo.Category.Id,
+			// 	TournamentId:   m.MatchInfo.Tournament.Id,
+			// 	TournamentName: m.MatchInfo.Tournament.Value,
+			// 	ListOrder:      m.MatchInfo.Tournament.Id,
+			// 	Lang:           "en",
+			// })
+			// db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
+			// 	Lang:         "en",
+			// 	CompId:       m.MatchInfo.AwayTeam.Id,
+			// 	Comp2Id:      m.MatchInfo.AwayTeam.Uniqueid,
+			// 	SportId:      m.MatchInfo.Sport.Id,
+			// 	Categoryid:   m.MatchInfo.Category.Id,
+			// 	TournamentId: m.MatchInfo.Tournament.Id,
+			// 	CompName:     lib.Capitalize(m.MatchInfo.AwayTeam.Value),
+			// })
+			// db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
+			// 	Lang:         "en",
+			// 	CompId:       m.MatchInfo.HomeTeam.Id,
+			// 	Comp2Id:      m.MatchInfo.HomeTeam.Uniqueid,
+			// 	SportId:      m.MatchInfo.Sport.Id,
+			// 	Categoryid:   m.MatchInfo.Category.Id,
+			// 	TournamentId: m.MatchInfo.Tournament.Id,
+			// 	CompName:     lib.Capitalize(m.MatchInfo.HomeTeam.Value),
+			// })
+			// data := sportsBook.Match{
+			// 	SportId:      m.MatchInfo.Sport.Id,
+			// 	Categoryid:   m.MatchInfo.Category.Id,
+			// 	TournamentId: m.MatchInfo.Tournament.Id,
+			// 	Matchid:      m.Matchid,
+			// 	Comp1:        m.MatchInfo.HomeTeam.Id,
+			// 	Comp2:        m.MatchInfo.AwayTeam.Id,
+			// 	Matchdate:    time.Unix(int64(*m.MatchInfo.DateOfMatch)/1000, 0).Format("2006-01-02 15-04-05"),
+			// 	LiveActive:   "1",
+			// 	//PeriodLength:
+			// }
+			var resp *http.Response
+			var file io.WriteCloser
+			var resData []byte
+			jsn, err := json.Marshal(m)
+			if nil != err {
+				fmt.Fprintln(os.Stderr, err)
+				goto errored
 			}
-			//fmt.Println("coming from meta", *m.MatchInfo.DateOfMatch, *m.MatchInfo.Category.Value)
-			db.Upsert(db.DB2.DB(), sportsBook.Sport{}.Tablename(), &sportsBook.Sport{
-				SportId:   m.MatchInfo.Sport.Id,
-				SportName: m.MatchInfo.Sport.Value,
-				ListOrder: m.MatchInfo.Sport.Id,
-				Lang:      "en"})
-			db.Upsert(db.DB2.DB(), sportsBook.Category{}.Tablename(), &sportsBook.Category{
-				SportId:      m.MatchInfo.Sport.Id,
-				Categoryid:   m.MatchInfo.Category.Id,
-				CategoryName: m.MatchInfo.Category.Value,
-				ListOrder:    m.MatchInfo.Category.Id,
-				Lang:         "en",
-			})
-			db.Upsert(db.DB2.DB(), sportsBook.Tournament{}.Tablename(), &sportsBook.Tournament{
-				SportId:        m.MatchInfo.Sport.Id,
-				Categoryid:     m.MatchInfo.Category.Id,
-				TournamentId:   m.MatchInfo.Tournament.Id,
-				TournamentName: m.MatchInfo.Tournament.Value,
-				ListOrder:      m.MatchInfo.Tournament.Id,
-				Lang:           "en",
-			})
-			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
-				Lang:         "en",
-				CompId:       m.MatchInfo.AwayTeam.Id,
-				Comp2Id:      m.MatchInfo.AwayTeam.Uniqueid,
-				SportId:      m.MatchInfo.Sport.Id,
-				Categoryid:   m.MatchInfo.Category.Id,
-				TournamentId: m.MatchInfo.Tournament.Id,
-				CompName:     lib.Capitalize(m.MatchInfo.AwayTeam.Value),
-			})
-			db.Upsert(db.DB2.DB(), sportsBook.Competitor{}.Tablename(), &sportsBook.Competitor{
-				Lang:         "en",
-				CompId:       m.MatchInfo.HomeTeam.Id,
-				Comp2Id:      m.MatchInfo.HomeTeam.Uniqueid,
-				SportId:      m.MatchInfo.Sport.Id,
-				Categoryid:   m.MatchInfo.Category.Id,
-				TournamentId: m.MatchInfo.Tournament.Id,
-				CompName:     lib.Capitalize(m.MatchInfo.HomeTeam.Value),
-			})
-			data := sportsBook.Match{
-				SportId:      m.MatchInfo.Sport.Id,
-				Categoryid:   m.MatchInfo.Category.Id,
-				TournamentId: m.MatchInfo.Tournament.Id,
-				Matchid:      m.Matchid,
-				Comp1:        m.MatchInfo.HomeTeam.Id,
-				Comp2:        m.MatchInfo.AwayTeam.Id,
-				Matchdate:    time.Unix(int64(*m.MatchInfo.DateOfMatch)/1000, 0).Format("2006-01-02 15-04-05"),
-				LiveActive:   "1",
-				//PeriodLength:
+			fmt.Println(string(jsn))
+			resp, err = http.PostForm("http://ekol24.com/yib/tr/api/proxypost/index", url.Values{"data": {string(jsn)}})
+			if nil != err {
+				file, err := os.OpenFile("ekolError.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+				if nil != err {
+					goto errored
+				}
+				fmt.Fprintln(file, time.Now().UTC().Format("02/01/2006 15:04:05"), err)
+				file.Close()
+				goto errored
 			}
+			file, err = os.OpenFile("ekolOut.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+			if nil != err {
+				goto errored
+			}
+			resData, _ = ioutil.ReadAll(resp.Body)
+			fmt.Fprintln(file, time.Now().UTC().Format("02/01/2006 15:04:05"), string(resData))
+			file.Close()
+
+			resp.Body.Close()
+		errored:
 			mtc.SportId = m.MatchInfo.Sport.Id
 			mtc.CategoryId = m.MatchInfo.Category.Id
 			mtc.TournamentId = m.MatchInfo.Tournament.Id
-			for _, extra := range m.MatchInfo.Infos {
-				if extra.Type == "PeriodLength" && extra.Value != nil {
-
-					i, err := strconv.Atoi(*extra.Value)
-					if nil != err {
-						fmt.Println("error", err, "extra info value:", *extra.Value)
-						continue
-					}
-					data.PeriodLength = &i
-
-				}
-			}
-			data.Update(db.DB2.DB())
+			// for _, extra := range m.MatchInfo.Infos {
+			// 	if extra.Type == "PeriodLength" && extra.Value != nil {
+			//
+			// 		i, err := strconv.Atoi(*extra.Value)
+			// 		if nil != err {
+			// 			fmt.Println("error", err, "extra info value:", *extra.Value)
+			// 			continue
+			// 		}
+			// 		data.PeriodLength = &i
+			//
+			// 	}
+			// }
+		// data.Update(db.DB2.DB())
 		case "undocancelbet":
 			oddIds := []*int{}
 			for _, od := range m.Odds {
@@ -189,7 +222,6 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			}
 		}
 		//upsert
-	disableMeta:
 		db.Upsert(db.DB.DB(), "matches", mtc)
 	}
 	<-limiter
