@@ -75,7 +75,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				fmt.Printf("match ended matchid=%d", *m.Matchid)
 			}
 			if m.Status != nil {
-				fmt.Println(*betradar.Status, *m.Status)
+				fmt.Println("!!", *betradar.Status, *m.Status)
 			}
 			db.DB.DB().Exec("UPDATE odds SET active=0 where matchId=?", *m.Matchid)
 		case "meta":
@@ -140,7 +140,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				fmt.Fprintln(os.Stderr, err)
 				goto errored
 			}
-			fmt.Println(string(jsn))
+			//	fmt.Println(string(jsn))
 			resp, err = http.PostForm("http://ekol24.com/yib/tr/api/proxypost/index", url.Values{"data": {string(jsn)}})
 			if nil != err {
 				file, err := os.OpenFile("ekolError.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -197,6 +197,8 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			}
 			odd.Model.Where("oddid in ( ? )", oddIds).Update("active", 0)
 
+		case "rollback":
+			fallthrough
 		case "clearbet":
 			for _, od := range m.Odds {
 				for _, odf := range od.OddsField {
