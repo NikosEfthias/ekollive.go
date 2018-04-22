@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
+	"./clientManager"
 	"./controllers/endpoints"
 	"./lib"
 	"./lib/betradar"
@@ -31,6 +32,7 @@ func main() {
 	var c = make(chan models.BetradarLiveOdds)
 	go betradar.Parse(c)
 	go wso.StartBroadcast(c)
+	go clientManager.ManageWsClients()
 	fmt.Println("server listenin on port ", *lib.Port)
 	log.Fatalln(http.ListenAndServe(":"+*lib.Port, mux))
 }
