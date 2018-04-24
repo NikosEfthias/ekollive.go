@@ -44,7 +44,7 @@ type Match struct {
 }
 type MatchInfo struct {
 	DateOfMatch *int `xml:"DateOfMatch"json:"DateOfMatch,omitempty"`
-	Sport       struct {
+	Sport struct {
 		Id    *int    `xml:"id,attr"json:"id,omitempty"`
 		Value *string `xml:",chardata"json:"value,omitempty"`
 	} `xml:"Sport"json:"Sport,omitempty"`
@@ -125,6 +125,7 @@ type OddsField struct {
 	Type        *string  `xml:"type,attr"json:"type,omitempty"`
 	Active      *int     `xml:"active,attr"json:"active,omitempty"`
 	Typeid      *int     `xml:"typeid,attr"json:"typeid,omitempty"`
+	OddsFieldId *int     `xml:"oddsfieldid,attr"json:"oddsfieldid,omitempty"`
 	Outcome     *string  `xml:"outcome,attr"json:"outcome,omitempty"`
 	Voidfactor  *float64 `xml:"voidfactor,attr"json:"voidfactor,omitempty"`
 	Probability *string  `xml:"probability,attr"json:"probability,omitempty"`
