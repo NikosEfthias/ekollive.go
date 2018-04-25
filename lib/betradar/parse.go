@@ -14,6 +14,7 @@ import (
 	"../../lib"
 	"../../models"
 	"../db"
+	"../websocketops"
 )
 
 var limiter chan bool
@@ -27,7 +28,7 @@ func init() {
 		go func() {
 			for {
 				time.Sleep(time.Millisecond * 10)
-				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)", len(limiter), runtime.NumGoroutine())
+				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)=> connectedClients(%d)", len(limiter), runtime.NumGoroutine(),len(websocketops.SocketList))
 			}
 		}()
 	}

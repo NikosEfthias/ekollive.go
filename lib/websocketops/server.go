@@ -29,17 +29,18 @@ func StartWsServer() *http.ServeMux {
 			}
 			return
 		}
-		defer con.Close()
 		var old = time.Now()
 		_ = old
 		AddConnection(con)
-		for {
-			t, _, err := con.ReadMessage()
-			if t == -1 || nil != err {
+		//for {
+		//	t, _, err := con.ReadMessage()
+		//	if t == -1 || nil != err {
+		<-time.After(time.Second*30)
 				DelConnection(con)
-				break
-			}
-		}
+		//		break
+		//	}
+		//}
+		con.Close()
 	})
 	return mux
 }

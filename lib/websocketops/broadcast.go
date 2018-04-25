@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
-	"../../lib"
+	"../../clientManager"
 	"../../models"
 	"../../models/repl"
 	"../store/filters"
@@ -15,11 +14,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var socketList []*websocket.Conn
+var SocketList []*websocket.Conn
 var sockData = make(chan []byte)
 
 func init() {
 	go Broadcast(sockData)
+
 }
 func BroadCastNow(data []byte) {
 	sockData <- data
@@ -27,7 +27,8 @@ func BroadCastNow(data []byte) {
 func Broadcast(d chan []byte) {
 	for {
 		data := <-d
-		for _, c := range socketList {
+		go clientManager.Broadcast(data)
+		for _, c := range SocketList {
 			if nil != c.WriteMessage(websocket.TextMessage, data) {
 				c.Close()
 				DelConnection(c)
@@ -38,12 +39,12 @@ func Broadcast(d chan []byte) {
 }
 
 func AddConnection(c *websocket.Conn) {
-	socketList = append(socketList, c)
+	SocketList = append(SocketList, c)
 }
 func DelConnection(c *websocket.Conn) {
-	for i, sock := range socketList {
+	for i, sock := range SocketList {
 		if sock == c {
-			socketList = append(socketList[:i], socketList[i+1:]...)
+			SocketList = append(SocketList[:i], SocketList[i+1:]...)
 			break
 		}
 	}
@@ -64,14 +65,6 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 }
 func StartBroadcast(c chan models.BetradarLiveOdds) {
 	for d := range c {
-		if *lib.Testing {
-			goto testing
-		}
-		if len(socketList) == 0 {
-			time.Sleep(time.Second)
-			continue
-		}
-	testing:
 		if checkStatuses(d) {
 			//check match.Status to publish or not
 			continue
