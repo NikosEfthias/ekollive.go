@@ -89,15 +89,23 @@ func Parse(c chan models.BetradarLiveOdds) {
 				flush = false
 				continue
 			}
-
-			select {
-			case c <- res:
-			default:
-			}
+			go func(res models.BetradarLiveOdds) {
+				var retried = false
+			retry:
+				select {
+				case c <- res:
+				case <-time.After(time.Millisecond * 10):
+					if retried {
+						return
+					}
+					retried = true
+					goto retry
+				}
+			}(res)
 			if *lib.DumpTags {
 				fmt.Println("\n\n", mainTag.String())
 			}
-			time.Sleep(time.Millisecond * 10)
+			time.Sleep(time.Millisecond * 50)
 			if res.Status != nil && *res.Status == "alive" {
 				goto alive
 			}
