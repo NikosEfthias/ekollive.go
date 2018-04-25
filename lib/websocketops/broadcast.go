@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
 	"../../clientManager"
-	"../../lib"
 	"../../models"
 	"../../models/repl"
 	"../store/filters"
@@ -67,14 +65,6 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 }
 func StartBroadcast(c chan models.BetradarLiveOdds) {
 	for d := range c {
-		if *lib.Testing {
-			goto testing
-		}
-		if len(SocketList) == 0 {
-			time.Sleep(time.Second)
-			continue
-		}
-	testing:
 		if checkStatuses(d) {
 			//check match.Status to publish or not
 			continue
