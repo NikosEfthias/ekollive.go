@@ -3,6 +3,7 @@ package websocketops
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -114,7 +115,9 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 				},
 				Odds: make([]*repl.Odd, 0),
 			}
-
+			if resp.Cards.Redaway != nil {
+				fmt.Fprintln(os.Stderr, resp.Cards)
+			}
 			for _, odd := range m.Odds {
 				if odd.Type == nil && odd.Subtype == nil && odd.Typeid == nil {
 					continue
