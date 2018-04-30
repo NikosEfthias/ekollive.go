@@ -31,6 +31,8 @@ func LoadAll() {
 	}
 }
 func Get(tp, subtp *string, tpid *int) int {
+	store.Lock()
+	defer store.Unlock()
 	val, ok := store.store[returnKey(tp, subtp, tpid)]
 	if ok {
 		return val
