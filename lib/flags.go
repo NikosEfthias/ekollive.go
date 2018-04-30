@@ -17,6 +17,7 @@ var (
 	LockOdds    *bool
 	Time        *int
 	DisableMeta *bool
+	MetaPost    *string
 )
 
 func init() {
@@ -27,12 +28,13 @@ func init() {
 
 }
 func applyFlags() {
+	MetaPost = flag.String("metaPost","","url for meta post")
 	Profile = flag.Bool("profile", false, "cpu profiling")
 	DumpTags = flag.Bool("dt", false, "Dump raw xml tags to the stdout")
 	BAR = flag.Bool("b", false, "Diplay the limiter and goroutine numbers")
-	ProxyURL = flag.String("addr", "localhost:8080", "betradar Proxy url to use to get live data")
-	DB = flag.String("DB", "root:@tcp(127.0.0.1:3306)/test", "DB address to use")
-	DB2 = flag.String("DB2", "root:@tcp(127.0.0.1:3306)/test", "second db address to use")
+	ProxyURL = flag.String("addr", ":8080", "betradar Proxy url to use to get live data")
+	DB = flag.String("DB", "root:@tcp(:3306)/test", "DB address to use")
+	DB2 = flag.String("DB2", "root:@tcp(:3306)/test", "second db address to use")
 	Port = flag.String("PORT", "9090", "Port number to listen on")
 	J = flag.Int("j", 50, "Concurrent dbops count")
 	Time = flag.Int("timeout", 60, "timeout for goroutines")
