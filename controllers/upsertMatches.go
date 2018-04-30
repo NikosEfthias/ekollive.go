@@ -147,7 +147,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 				file.Write([]byte("\n\n--\n\n"))
 				file.Close()
 			}
-			resp, err = http.PostForm("http://localhost/yib/tr/api/proxypost/index", url.Values{"data": {string(jsn)}})
+			resp, err = http.PostForm(*lib.MetaPost, url.Values{"data": {string(jsn)}})
 			if nil != err {
 				file, err := os.OpenFile("ekolError.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 				if nil != err {
@@ -182,7 +182,7 @@ func UpsertMatches(matches []models.Match, limiter chan bool, betradar models.Be
 			//
 			// 	}
 			// }
-		// data.Update(db.DB2.DB())
+			// data.Update(db.DB2.DB())
 		case "undocancelbet":
 			oddIds := []*int{}
 			for _, od := range m.Odds {
