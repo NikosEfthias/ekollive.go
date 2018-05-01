@@ -51,6 +51,6 @@ type Cards struct {
 	Yellowhome    *int `json:"yellowhome,omitempty"filter:"yellowhome"`
 	Redaway       *int `json:"redaway,omitempty"filter:"redaway"`
 	Yellowaway    *int `json:"yellowaway,omitempty"filter:"yellowaway"`
-	Yellowredaway *int `json:"redaway,omitempty"filter:"yellowredaway"`
-	Yellowredhome *int `json:"yellowhome,omitempty"filter:"yellowredhome"`
+	Yellowredaway *int `json:"yellowredaway,omitempty"filter:"yellowredaway"`
+	Yellowredhome *int `json:"yellowredhome,omitempty"filter:"yellowredhome"`
 }
