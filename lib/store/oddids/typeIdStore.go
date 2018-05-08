@@ -4,6 +4,9 @@ import "sync"
 import (
 	"../../../models/oddType"
 	"strconv"
+	"../../../models"
+	"strings"
+	"fmt"
 )
 
 type typeids struct {
@@ -58,14 +61,54 @@ func Set(o *oddType.Oddtype) int {
 	}
 	return 0
 }
+
+func SetById(odd *models.Odd) error {
+	var (
+		temp      string
+		tempSlice []string
+		err       error
+	)
+	if nil==odd{
+			return fmt.Errorf("null odd")
+	}
+	store.Lock()
+	defer store.Unlock()
+	for k, v := range store.store {
+		if v == *odd.OddTypeId {
+			temp = k
+			break
+		}
+	}
+	if "" == temp {
+		return fmt.Errorf("oddtypeid could not found")
+	}
+	tempSlice = strings.Split(temp, "|")
+
+	odd.Type = new(string)
+	odd.Subtype = new(string)
+	odd.Typeid = new(int)
+
+	*odd.Type = tempSlice[0]
+	if len(tempSlice) >= 2 {
+		*odd.Subtype = tempSlice[1]
+	}
+	if len(tempSlice) == 3 {
+		*odd.Typeid, err = strconv.Atoi(tempSlice[2])
+		if nil != err {
+			return fmt.Errorf("error on ../lib/store/oddids , can not convert int")
+		}
+	}
+	return nil
+}
+
 func returnKey(tp, subtp *string, tpid *int) string {
 	var key string
 
 	if tp != nil {
-		key += *tp
+		key += *tp + "|"
 	}
 	if subtp != nil {
-		key += *subtp
+		key += *subtp + "|"
 	}
 	if tpid != nil {
 		key += strconv.Itoa(*tpid)

@@ -117,6 +117,7 @@ type Odd struct {
 	Active           *int        `xml:"active,attr"json:"active,omitempty"`
 	Changed          *string     `xml:"changed,attr"json:"changed,omitempty"`
 	Typeid           *int        `xml:"typeid,attr"json:"typeid,omitempty"`
+	OddTypeId        *int        `xml:"oddtypeid,attr"json:"oddtypeid,omitempty"`
 	Mostbalanced     *int        `xml:"mostbalanced,attr"json:"mostbalanced,omitempty"`
 	OddsField        []OddsField `xml:"OddsField"json:"OddsField,omitempty"`
 }

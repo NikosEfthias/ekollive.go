@@ -115,9 +115,7 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 				Odds: make([]*repl.Odd, 0),
 			}
 			for _, odd := range m.Odds {
-				if odd.Type == nil && odd.Subtype == nil && odd.Typeid == nil {
-					continue
-				}
+
 				o := &repl.Odd{
 					OddsId:       *odd.Id,
 					OddsType:     oddids.Get(odd.Type, odd.Subtype, odd.Typeid),

@@ -15,6 +15,7 @@ import (
 	"../../models"
 	"../db"
 	"../websocketops"
+	"../store/oddids"
 )
 
 var limiter chan bool
@@ -28,7 +29,7 @@ func init() {
 		go func() {
 			for {
 				time.Sleep(time.Millisecond * 10)
-				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)=> connectedClients(%d)", len(limiter), runtime.NumGoroutine(),len(websocketops.SocketList))
+				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)=> connectedClients(%d)", len(limiter), runtime.NumGoroutine(), len(websocketops.SocketList))
 			}
 		}()
 	}
@@ -89,6 +90,16 @@ func Parse(c chan models.BetradarLiveOdds) {
 				mainTag.Reset()
 				flush = false
 				continue
+			}
+			for _, match := range res.Match {
+				for _,odd :=range match.Odds {
+					if nil != odd.OddTypeId {
+						err := oddids.SetById(&odd)
+						if nil != err {
+							fmt.Println(err)
+						}
+					}
+				}
 			}
 			go func(res models.BetradarLiveOdds) {
 				var retried = false
