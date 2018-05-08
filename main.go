@@ -29,7 +29,7 @@ func main() {
 	if *lib.Profile {
 		mux.HandleFunc("/debug/pprof/", pprof.Index)
 	}
-	var c = make(chan models.BetradarLiveOdds)
+	var c = make(chan *models.BetradarLiveOdds)
 	go betradar.Parse(c)
 	go wso.StartBroadcast(c)
 	go clientManager.ManageWsClients()

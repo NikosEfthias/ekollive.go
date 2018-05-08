@@ -63,9 +63,9 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 	}
 	return true
 }
-func StartBroadcast(c chan models.BetradarLiveOdds) {
+func StartBroadcast(c chan *models.BetradarLiveOdds) {
 	for d := range c {
-		if checkStatuses(d) {
+		if d==nil||checkStatuses(*d) {
 			//check match.Status to publish or not
 			continue
 		}
@@ -125,6 +125,9 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 					Mostbalanced: odd.Mostbalanced,
 					Odds:         make([]*repl.OddField, 0),
 				}
+				if nil!=odd.OddTypeId{
+						o.OddsType=*odd.OddTypeId
+				}
 				for _, odf := range odd.OddsField {
 					od_f := &repl.OddField{
 						Outcomeid: odf.Typeid,
@@ -147,10 +150,12 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 				filters.ApplyFilters(resp, filters.GetFiltersByMatchId(strconv.Itoa(*resp.Matchid)))
 			}
 			dt, err := json.Marshal(resp)
+			//dx, err := json.MarshalIndent(resp,"","	")
 			if nil != err {
 				fmt.Println(err)
 				continue
 			}
+			//fmt.Println(string(dx))
 			sockData <- dt
 		}
 	}

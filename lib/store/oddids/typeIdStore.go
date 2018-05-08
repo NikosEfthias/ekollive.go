@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"../../../models"
 	"strings"
-	"fmt"
 )
 
 type typeids struct {
@@ -62,15 +61,12 @@ func Set(o *oddType.Oddtype) int {
 	return 0
 }
 
-func SetById(odd *models.Odd) error {
+func SetById(odd models.Odd) models.Odd {
 	var (
 		temp      string
 		tempSlice []string
-		err       error
 	)
-	if nil==odd{
-			return fmt.Errorf("null odd")
-	}
+
 	store.Lock()
 	defer store.Unlock()
 	for k, v := range store.store {
@@ -80,25 +76,22 @@ func SetById(odd *models.Odd) error {
 		}
 	}
 	if "" == temp {
-		return fmt.Errorf("oddtypeid could not found")
+		return odd
 	}
 	tempSlice = strings.Split(temp, "|")
 
-	odd.Type = new(string)
-	odd.Subtype = new(string)
-	odd.Typeid = new(int)
-
-	*odd.Type = tempSlice[0]
+	odd.Type = &tempSlice[0]
 	if len(tempSlice) >= 2 {
-		*odd.Subtype = tempSlice[1]
+		odd.Subtype = &tempSlice[1]
 	}
 	if len(tempSlice) == 3 {
-		*odd.Typeid, err = strconv.Atoi(tempSlice[2])
+		_odd, err := strconv.Atoi(tempSlice[2])
 		if nil != err {
-			return fmt.Errorf("error on ../lib/store/oddids , can not convert int")
+			return odd
 		}
+		odd.Typeid=&_odd
 	}
-	return nil
+	return odd
 }
 
 func returnKey(tp, subtp *string, tpid *int) string {
