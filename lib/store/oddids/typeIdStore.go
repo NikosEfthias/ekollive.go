@@ -97,10 +97,10 @@ func SetById(odd models.Odd) models.Odd {
 func returnKey(tp, subtp *string, tpid *int) string {
 	var key string
 
-	if tp != nil {
+	if tp != nil && *tp != "" {
 		key += *tp + "|"
 	}
-	if subtp != nil {
+	if subtp != nil && *subtp != "" {
 		key += *subtp + "|"
 	}
 	if tpid != nil {
