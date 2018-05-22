@@ -14,6 +14,7 @@ type Oddtype struct {
 	Typeid       *int     `json:"typeid"`
 	Sportid      *int     `json:"sportid"`
 	Oddtypevalue *string  `json:"oddtypevalue"`
+	HalfTime     *bool	  `gorm:"type:TINYINT;default:0;column:halftime"`
 	Status       *int     `gorm:"type:TINYINT;default:1" json:"status"`
 	MinStake     *float64 `gorm:"default:null;column:minStake" json:"min_stake"`
 	BetLimit     *float64 `gorm:"default:null;column:betLimit" json:"bet_limit"`
