@@ -9,7 +9,6 @@ import (
 type Oddfieldtype struct {
 	Oddtypeid   *int
 	Typeid      *int
-	OddsFieldId *int       `gorm:"column:oddsfieldid"`
 	Type        *string    `gorm:"not null"`
 	MinStake    *float64   `gorm:"default:0;column:minStake"`
 	MaxStake    *float64   `gorm:"default:0;column:maxStake"`
