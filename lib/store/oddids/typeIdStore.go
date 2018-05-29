@@ -42,6 +42,9 @@ func Get(tp, subtp *string, tpid *int) int {
 	return 0
 }
 func Set(o *oddType.Oddtype) int {
+	if nil != o.Oddtypeid {
+		return *o.Oddtypeid
+	}
 	if val := Get(o.Type, o.Subtype, o.Typeid); val != 0 {
 		o.Oddtypeid = &val
 		return val
@@ -58,7 +61,7 @@ func Set(o *oddType.Oddtype) int {
 		store.store[returnKey(o.Type, o.Subtype, o.Typeid)] = *o.Oddtypeid
 		return *o.Oddtypeid
 	}
-	return 0
+return 0
 }
 
 func SetById(odd models.Odd) models.Odd {
