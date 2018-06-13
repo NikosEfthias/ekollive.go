@@ -65,7 +65,7 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 }
 func StartBroadcast(c chan *models.BetradarLiveOdds) {
 	for d := range c {
-		if d==nil||checkStatuses(*d) {
+		if d == nil || checkStatuses(*d) {
 			//check match.Status to publish or not
 			continue
 		}
@@ -80,12 +80,13 @@ func StartBroadcast(c chan *models.BetradarLiveOdds) {
 		}
 		for _, m := range d.Match {
 			resp := &repl.Reply{
-				Active:      m.Active,
-				Matchid:     m.Matchid,
-				Betstatus:   m.Betstatus,
-				Matchstatus: m.Status,
-				Service:     m.Server,
-				Tiebreak:    m.Tiebreak,
+				Active:         m.Active,
+				Matchid:        m.Matchid,
+				Betstatus:      m.Betstatus,
+				Matchstatus:    m.Status,
+				Earlybetstatus: m.Earlybetstatus,
+				Service:        m.Server,
+				Tiebreak:       m.Tiebreak,
 				Score: &repl.Score{
 					Matchscore: m.Score,
 					Gamescore:  m.Gamescore,
@@ -125,8 +126,8 @@ func StartBroadcast(c chan *models.BetradarLiveOdds) {
 					Mostbalanced: odd.Mostbalanced,
 					Odds:         make([]*repl.OddField, 0),
 				}
-				if nil!=odd.OddTypeId{
-						o.OddsType=*odd.OddTypeId
+				if nil != odd.OddTypeId {
+					o.OddsType = *odd.OddTypeId
 				}
 				for _, odf := range odd.OddsField {
 					od_f := &repl.OddField{
@@ -150,7 +151,7 @@ func StartBroadcast(c chan *models.BetradarLiveOdds) {
 				filters.ApplyFilters(resp, filters.GetFiltersByMatchId(strconv.Itoa(*resp.Matchid)))
 			}
 			dt, err := json.Marshal(resp)
-			//dx, err := json.MarshalIndent(resp,"","	")
+			//dx, err := json.MarshalIndent(resp, "", "	")
 			if nil != err {
 				fmt.Println(err)
 				continue

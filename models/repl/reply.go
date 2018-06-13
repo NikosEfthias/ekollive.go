@@ -1,17 +1,18 @@
 package repl
 
 type Reply struct {
-	Active      *int     `json:"active,omitempty"filter:"active"`
-	Matchid     *int     `json:"matchid,omitempty"filter:"matchid"`
-	Betstatus   *string  `json:"betstatus,omitempty"filter:"betstatus"`
-	Matchstatus *string  `json:"matchstatus,omitempty"filter:"matchstatus"`
-	Service     *int     `json:"service,omitempty"filter:"service"`
-	Tiebreak    *string  `json:"tiebreak,omitempty"filter:"tiebreak"`
-	Score       *Score   `json:"score,omitempty"`
-	Cards       *Cards   `json:"cards,omitempty"`
-	Time        *Time    `json:"time,omitempty"`
-	Corners     *Corners `json:"corners,omitempty"`
-	Odds        []*Odd   `json:"odds,omitempty"`
+	Active         *int     `json:"active,omitempty"filter:"active"`
+	Matchid        *int     `json:"matchid,omitempty"filter:"matchid"`
+	Betstatus      *string  `json:"betstatus,omitempty"filter:"betstatus"`
+	Matchstatus    *string  `json:"matchstatus,omitempty"filter:"matchstatus"`
+	Earlybetstatus *string  `xml:"earlybetstatus,attr"json:"earlybetstatus,omitempty"`
+	Service        *int     `json:"service,omitempty"filter:"service"`
+	Tiebreak       *string  `json:"tiebreak,omitempty"filter:"tiebreak"`
+	Score          *Score   `json:"score,omitempty"`
+	Cards          *Cards   `json:"cards,omitempty"`
+	Time           *Time    `json:"time,omitempty"`
+	Corners        *Corners `json:"corners,omitempty"`
+	Odds           []*Odd   `json:"odds,omitempty"`
 }
 type Corners struct {
 	Home *int `json:"home,omitempty"filter:"home"`
