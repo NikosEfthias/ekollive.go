@@ -65,10 +65,12 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 }
 func StartBroadcast(c chan *models.BetradarLiveOdds) {
 	for d := range c {
+
 		if d == nil || checkStatuses(*d) {
 			//check match.Status to publish or not
 			continue
 		}
+
 		if *d.Status == "alive" && len(d.Match) == 0 {
 			dt, err := json.Marshal(d)
 			if nil != err {
@@ -78,6 +80,7 @@ func StartBroadcast(c chan *models.BetradarLiveOdds) {
 			sockData <- dt
 			continue
 		}
+
 		for _, m := range d.Match {
 			resp := &repl.Reply{
 				Active:         m.Active,
@@ -114,6 +117,19 @@ func StartBroadcast(c chan *models.BetradarLiveOdds) {
 					Away: m.Cornersaway,
 				},
 				Odds: make([]*repl.Odd, 0),
+			}
+			for _, card := range m.Card {
+
+				c := &repl.ShownCards{
+					Canceled: card.Canceled,
+					Id:       card.Id,
+					Player:   card.Player,
+					Team:     card.Team,
+					Time:     card.Time,
+					Type:     card.Type,
+					Playerid: card.Playerid,
+				}
+				resp.ShownCards = append(resp.ShownCards, c)
 			}
 			for _, odd := range m.Odds {
 
