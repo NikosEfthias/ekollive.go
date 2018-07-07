@@ -84,7 +84,10 @@ func Parse(c chan *models.BetradarLiveOdds) {
 			if nil != err {
 				f, er := os.Create("errored.tags.dump.xml")
 				fmt.Println(er)
+				f.Write([]byte(err.Error()))
+				f.Write([]byte("\r\n\r\n"))
 				f.Write(mainTag.Bytes())
+				f.Write([]byte("\n---\n"))
 				f.Close()
 				fmt.Println("\x1B[31mXMLParseError", err, "\x1B[0m")
 				mainTag.Reset()
