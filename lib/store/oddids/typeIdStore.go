@@ -4,6 +4,8 @@ import "sync"
 import (
 	"../../../models/oddType"
 	"strconv"
+	"../../../models"
+	"strings"
 )
 
 type typeids struct {
@@ -31,6 +33,8 @@ func LoadAll() {
 	}
 }
 func Get(tp, subtp *string, tpid *int) int {
+	store.Lock()
+	defer store.Unlock()
 	val, ok := store.store[returnKey(tp, subtp, tpid)]
 	if ok {
 		return val
@@ -38,6 +42,9 @@ func Get(tp, subtp *string, tpid *int) int {
 	return 0
 }
 func Set(o *oddType.Oddtype) int {
+	if nil != o.Oddtypeid {
+		return *o.Oddtypeid
+	}
 	if val := Get(o.Type, o.Subtype, o.Typeid); val != 0 {
 		o.Oddtypeid = &val
 		return val
@@ -54,16 +61,50 @@ func Set(o *oddType.Oddtype) int {
 		store.store[returnKey(o.Type, o.Subtype, o.Typeid)] = *o.Oddtypeid
 		return *o.Oddtypeid
 	}
-	return 0
+return 0
 }
+
+func SetById(odd models.Odd) models.Odd {
+	var (
+		temp      string
+		tempSlice []string
+	)
+
+	store.Lock()
+	defer store.Unlock()
+	for k, v := range store.store {
+		if v == *odd.OddTypeId {
+			temp = k
+			break
+		}
+	}
+	if "" == temp {
+		return odd
+	}
+	tempSlice = strings.Split(temp, "|")
+
+	odd.Type = &tempSlice[0]
+	if len(tempSlice) >= 2 {
+		odd.Subtype = &tempSlice[1]
+	}
+	if len(tempSlice) == 3 {
+		_odd, err := strconv.Atoi(tempSlice[2])
+		if nil != err {
+			return odd
+		}
+		odd.Typeid=&_odd
+	}
+	return odd
+}
+
 func returnKey(tp, subtp *string, tpid *int) string {
 	var key string
 
-	if tp != nil {
-		key += *tp
+	if tp != nil && *tp != "" {
+		key += *tp + "|"
 	}
-	if subtp != nil {
-		key += *subtp
+	if subtp != nil && *subtp != "" {
+		key += *subtp + "|"
 	}
 	if tpid != nil {
 		key += strconv.Itoa(*tpid)

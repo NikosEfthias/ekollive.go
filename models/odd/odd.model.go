@@ -11,6 +11,7 @@ var Model *gorm.DB
 type Odd struct {
 	Oddid          *int
 	Matchid        *int
+	OddsFieldId    *int       `gorm:"column:oddsfieldid"`
 	OddFieldTypeId *int       `gorm:"column:oddFieldTypeId"`
 	OddTypeId      *int       `gorm:"column:oddTypeId"`
 	Specialvalue   *string    `gorm:"column:specialvalue"`
@@ -25,7 +26,7 @@ func init() {
 	Model = db.DB.Model(&Odd{})
 	if !Model.HasTable(&Odd{}) {
 		Model.CreateTable(&Odd{})
-		Model.AddUniqueIndex("primary_key", "matchid", "oddid", "oddFieldTypeId", "oddTypeid","specialValue")
+		Model.AddUniqueIndex("primary_key", "matchid", "oddid", "oddFieldTypeId", "oddTypeid", "specialValue")
 	}
 }
 

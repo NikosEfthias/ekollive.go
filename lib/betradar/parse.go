@@ -15,6 +15,7 @@ import (
 	"../../models"
 	"../db"
 	"../websocketops"
+	"../store/oddids"
 )
 
 var limiter chan bool
@@ -28,14 +29,14 @@ func init() {
 		go func() {
 			for {
 				time.Sleep(time.Millisecond * 10)
-				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)=> connectedClients(%d)", len(limiter), runtime.NumGoroutine(),len(websocketops.SocketList))
+				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)=> connectedClients(%d)", len(limiter), runtime.NumGoroutine(), len(websocketops.SocketList))
 			}
 		}()
 	}
 	data = make(chan bool)
 }
 
-func Parse(c chan models.BetradarLiveOdds) {
+func Parse(c chan *models.BetradarLiveOdds) {
 	con := Connect(*lib.ProxyURL)
 	scanner := bufio.NewScanner(con)
 
@@ -77,20 +78,32 @@ func Parse(c chan models.BetradarLiveOdds) {
 			mainTag.WriteString(line)
 		}
 		if flush {
-			var res = models.BetradarLiveOdds{}
+			var res = &models.BetradarLiveOdds{}
 
 			err := xml.Unmarshal(mainTag.Bytes(), &res)
 			if nil != err {
 				f, er := os.Create("errored.tags.dump.xml")
 				fmt.Println(er)
+				f.Write([]byte(err.Error()))
+				f.Write([]byte("\r\n\r\n"))
 				f.Write(mainTag.Bytes())
+				f.Write([]byte("\n---\n"))
 				f.Close()
 				fmt.Println("\x1B[31mXMLParseError", err, "\x1B[0m")
 				mainTag.Reset()
 				flush = false
 				continue
 			}
-			go func(res models.BetradarLiveOdds) {
+			for _, match := range res.Match {
+				for i,odd :=range match.Odds {
+
+					if nil != odd.OddTypeId {
+						match.Odds[i]= oddids.SetById(odd)
+
+					}
+				}
+			}
+			go func(res *models.BetradarLiveOdds) {
 				var retried = false
 			retry:
 				select {
@@ -110,12 +123,12 @@ func Parse(c chan models.BetradarLiveOdds) {
 			if res.Status != nil && *res.Status == "alive" {
 				goto alive
 			}
-			go func(res models.BetradarLiveOdds) {
+			go func(res *models.BetradarLiveOdds) {
 				limiter <- true
 				if res.Status == nil {
 					return
 				}
-				controllers.UpsertMatches(res.Match, limiter, res)
+				controllers.UpsertMatches(res.Match, limiter, *res)
 			}(res)
 		alive:
 			mainTag.Reset()

@@ -63,12 +63,14 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 	}
 	return true
 }
-func StartBroadcast(c chan models.BetradarLiveOdds) {
+func StartBroadcast(c chan *models.BetradarLiveOdds) {
 	for d := range c {
-		if checkStatuses(d) {
+
+		if d == nil || checkStatuses(*d) {
 			//check match.Status to publish or not
 			continue
 		}
+
 		if *d.Status == "alive" && len(d.Match) == 0 {
 			dt, err := json.Marshal(d)
 			if nil != err {
@@ -78,14 +80,16 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 			sockData <- dt
 			continue
 		}
+
 		for _, m := range d.Match {
 			resp := &repl.Reply{
-				Active:      m.Active,
-				Matchid:     m.Matchid,
-				Betstatus:   m.Betstatus,
-				Matchstatus: m.Status,
-				Service:     m.Server,
-				Tiebreak:    m.Tiebreak,
+				Active:         m.Active,
+				Matchid:        m.Matchid,
+				Betstatus:      m.Betstatus,
+				Matchstatus:    m.Status,
+				Earlybetstatus: m.Earlybetstatus,
+				Service:        m.Server,
+				Tiebreak:       m.Tiebreak,
 				Score: &repl.Score{
 					Matchscore: m.Score,
 					Gamescore:  m.Gamescore,
@@ -114,10 +118,21 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 				},
 				Odds: make([]*repl.Odd, 0),
 			}
-			for _, odd := range m.Odds {
-				if odd.Type == nil && odd.Subtype == nil && odd.Typeid == nil {
-					continue
+			for _, card := range m.Card {
+
+				c := &repl.ShownCards{
+					Canceled: card.Canceled,
+					Id:       card.Id,
+					Player:   card.Player,
+					Team:     card.Team,
+					Time:     card.Time,
+					Type:     card.Type,
+					Playerid: card.Playerid,
 				}
+				resp.ShownCards = append(resp.ShownCards, c)
+			}
+			for _, odd := range m.Odds {
+
 				o := &repl.Odd{
 					OddsId:       *odd.Id,
 					OddsType:     oddids.Get(odd.Type, odd.Subtype, odd.Typeid),
@@ -126,6 +141,9 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 					Typename:     odd.Freetext,
 					Mostbalanced: odd.Mostbalanced,
 					Odds:         make([]*repl.OddField, 0),
+				}
+				if nil != odd.OddTypeId {
+					o.OddsType = *odd.OddTypeId
 				}
 				for _, odf := range odd.OddsField {
 					od_f := &repl.OddField{
@@ -149,10 +167,12 @@ func StartBroadcast(c chan models.BetradarLiveOdds) {
 				filters.ApplyFilters(resp, filters.GetFiltersByMatchId(strconv.Itoa(*resp.Matchid)))
 			}
 			dt, err := json.Marshal(resp)
+			//dx, err := json.MarshalIndent(resp, "", "	")
 			if nil != err {
 				fmt.Println(err)
 				continue
 			}
+			//fmt.Println(string(dx))
 			sockData <- dt
 		}
 	}

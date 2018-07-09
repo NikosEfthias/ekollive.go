@@ -25,8 +25,9 @@ func UpsertOdds(match models.Match) {
 			Type:         o.Type,
 			Typeid:       o.Typeid,
 			Oddtypevalue: o.Freetext,
+			Oddtypeid:    o.OddTypeId,
 		}
-		if oddids.Set(od) == 0 {
+		if od.Oddtypeid == nil && oddids.Set(od) == 0 {
 			fmt.Println("\n\nan error occured inserting the odd")
 			litter.Dump(od)
 		}
@@ -69,6 +70,7 @@ func UpsertOdds(match models.Match) {
 					Specialvalue:   o.Specialoddsvalue,
 					Mostbalanced:   o.Mostbalanced,
 					Active:         of.Active,
+					OddsFieldId:    of.OddsFieldId,
 				}
 				if of.InnerValue != nil && *of.InnerValue != "" {
 					f, err := strconv.ParseFloat(*of.InnerValue, 64)

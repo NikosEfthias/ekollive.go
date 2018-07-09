@@ -1,17 +1,19 @@
 package repl
 
 type Reply struct {
-	Active      *int     `json:"active,omitempty"filter:"active"`
-	Matchid     *int     `json:"matchid,omitempty"filter:"matchid"`
-	Betstatus   *string  `json:"betstatus,omitempty"filter:"betstatus"`
-	Matchstatus *string  `json:"matchstatus,omitempty"filter:"matchstatus"`
-	Service     *int     `json:"service,omitempty"filter:"service"`
-	Tiebreak    *string  `json:"tiebreak,omitempty"filter:"tiebreak"`
-	Score       *Score   `json:"score,omitempty"`
-	Cards       *Cards   `json:"cards,omitempty"`
-	Time        *Time    `json:"time,omitempty"`
-	Corners     *Corners `json:"corners,omitempty"`
-	Odds        []*Odd   `json:"odds,omitempty"`
+	Active         *int          `json:"active,omitempty"filter:"active"`
+	Matchid        *int          `json:"matchid,omitempty"filter:"matchid"`
+	Betstatus      *string       `json:"betstatus,omitempty"filter:"betstatus"`
+	Matchstatus    *string       `json:"matchstatus,omitempty"filter:"matchstatus"`
+	Earlybetstatus *string       `xml:"earlybetstatus,attr"json:"earlybetstatus,omitempty"`
+	Service        *int          `json:"service,omitempty"filter:"service"`
+	Tiebreak       *string       `json:"tiebreak,omitempty"filter:"tiebreak"`
+	Score          *Score        `json:"score,omitempty"`
+	Cards          *Cards        `json:"cards,omitempty"`
+	ShownCards     []*ShownCards `json:"showncards,omitempty"`
+	Time           *Time         `json:"time,omitempty"`
+	Corners        *Corners      `json:"corners,omitempty"`
+	Odds           []*Odd        `json:"odds,omitempty"`
 }
 type Corners struct {
 	Home *int `json:"home,omitempty"filter:"home"`
@@ -53,4 +55,13 @@ type Cards struct {
 	Yellowaway    *int `json:"yellowaway,omitempty"filter:"yellowaway"`
 	Yellowredaway *int `json:"yellowredaway,omitempty"filter:"yellowredaway"`
 	Yellowredhome *int `json:"yellowredhome,omitempty"filter:"yellowredhome"`
+}
+type ShownCards struct {
+	Canceled *string `xml:"canceled,attr"json:"canceled,omitempty"`
+	Id       *int    `xml:"id,attr"json:"id,omitempty"`
+	Player   *string `xml:"player,attr"json:"player,omitempty"`
+	Team     *string `xml:"team,attr"json:"team,omitempty"`
+	Time     *int    `xml:"time,attr"json:"time,omitempty"`
+	Type     *string `xml:"type,attr"json:"type,omitempty"`
+	Playerid *int    `xml:"playerid,attr"json:"playerid,omitempty"`
 }
