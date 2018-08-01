@@ -63,7 +63,7 @@ func checkStatuses(data models.BetradarLiveOdds) bool {
 	}
 	return true
 }
-func StartBroadcast(c chan *models.BetradarLiveOdds) {
+func StartBroadcast(c chan *models.BetconstructData) {
 	for d := range c {
 
 		if d == nil || checkStatuses(*d) {

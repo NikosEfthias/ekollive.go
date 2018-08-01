@@ -1,138 +1,171 @@
 package betradar
 
 import (
-	"bufio"
-	"bytes"
-	"encoding/xml"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
-	"runtime"
-	"strings"
 	"time"
 
-	"../../controllers"
-	"../../lib"
-	"../../models"
-	"../db"
-	"../websocketops"
-	"../store/oddids"
+	"github.com/k0kubun/pp"
+	"github.com/mugsoft/ekollive.go/lib"
+	"github.com/mugsoft/ekollive.go/models"
+	"github.com/mugsoft/tools"
 )
 
-var limiter chan bool
-var mainTag bytes.Buffer
-var start, flush bool
-var data chan bool
+// var limiter chan bool
+var dataChan chan []byte
 
 func init() {
-	limiter = make(chan bool, *lib.J)
-	if *lib.BAR {
-		go func() {
-			for {
-				time.Sleep(time.Millisecond * 10)
-				fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)=> connectedClients(%d)", len(limiter), runtime.NumGoroutine(), len(websocketops.SocketList))
-			}
-		}()
-	}
-	data = make(chan bool)
+	// limiter = make(chan bool, *lib.J)
+	// if *lib.BAR {
+	// 	go func() {
+	// 		for {
+	// 			time.Sleep(time.Millisecond * 10)
+	// 			fmt.Printf("\rlimiter (%d)=> goroutinesNum(%d)", len(limiter), runtime.NumGoroutine())
+	// 		}
+	// 	}()
+	// }
+	dataChan = make(chan []byte)
 }
 
-func Parse(c chan *models.BetradarLiveOdds) {
-	con := Connect(*lib.ProxyURL)
-	scanner := bufio.NewScanner(con)
+var writeit = make(chan bool)
 
-	for {
-		go func() { data <- scanner.Scan() }()
-		select {
-		case a := <-data:
-			if !a {
-				time.Sleep(time.Second * 5)
-				fmt.Println("\n\n\nconnection dropped reconnecting")
-				db.DB.DB().Exec("update matches set betstatus='stopped' where betstatus='started'")
-				db.DB.DB().Exec("update odds set active='0' WHERE active='1'")
-				os.Exit(0)
-			}
-		case <-time.After(time.Second * 50):
-			fmt.Println("\n\n\n\x1B[31m", "no data for 50 seconds restarting", "\x1B[0m")
-			db.DB.DB().Exec("update matches set betstatus='stopped' where betstatus='started'")
-			db.DB.DB().Exec("update odds set active='0' WHERE active='1'")
-			os.Exit(0)
-		}
-		line := strings.TrimSpace(scanner.Text())
-		if !strings.HasSuffix(line, "/>") && strings.HasPrefix(line, "<BetradarLiveOdds") {
-			//start
-			//fmt.Println(line)
-			start = true
-			mainTag.WriteString(line)
-			continue
-		} else if strings.HasSuffix(line, "/>") && strings.HasPrefix(line, "<BetradarLiveOdds") {
-			mainTag.WriteString(line)
-			start = false
-			flush = true
-		} else if start && strings.HasPrefix(line, "</BetradarLiveOdds") {
-			//fmt.Println(line)
-			mainTag.WriteString(line)
-			start = false
-			flush = true
-		}
-		if start {
-			mainTag.WriteString(line)
-		}
-		if flush {
-			var res = &models.BetradarLiveOdds{}
-
-			err := xml.Unmarshal(mainTag.Bytes(), &res)
+func Parse() {
+	con := Connect(*lib.DirectURL)
+	//	var marshalDone = make(chan bool)
+	go func() {
+		for {
+			var totalData []byte
+			var meta = make([]byte, 4)
+			n, err := con.Read(meta)
+			var length = int(tools.LE2Int(meta))
+			var remainsToConsume = length
 			if nil != err {
-				f, er := os.Create("errored.tags.dump.xml")
-				fmt.Println(er)
-				f.Write([]byte(err.Error()))
-				f.Write([]byte("\r\n\r\n"))
-				f.Write(mainTag.Bytes())
-				f.Write([]byte("\n---\n"))
-				f.Close()
-				fmt.Println("\x1B[31mXMLParseError", err, "\x1B[0m")
-				mainTag.Reset()
-				flush = false
+				log.Fatalln(err)
+			} else if n < 4 {
+				fmt.Println("Erroorrr they sent less bytes ")
 				continue
 			}
-			for _, match := range res.Match {
-				for i,odd :=range match.Odds {
 
-					if nil != odd.OddTypeId {
-						match.Odds[i]= oddids.SetById(odd)
-
-					}
-				}
+		readMore:
+			var data = make([]byte, remainsToConsume)
+			n, _ = con.Read(data)
+			remainsToConsume -= n
+			totalData = append(totalData, data[:n]...)
+			pp.Println(remainsToConsume, "<===>", length)
+			if 0 < remainsToConsume {
+				goto readMore
 			}
-			go func(res *models.BetradarLiveOdds) {
-				var retried = false
-			retry:
-				select {
-				case c <- res:
-				case <-time.After(time.Millisecond * 10):
-					if retried {
-						return
-					}
-					retried = true
-					goto retry
-				}
-			}(res)
-			if *lib.DumpTags {
-				fmt.Println("\n\n", mainTag.String())
-			}
-			time.Sleep(time.Millisecond * 50)
-			if res.Status != nil && *res.Status == "alive" {
-				goto alive
-			}
-			go func(res *models.BetradarLiveOdds) {
-				limiter <- true
-				if res.Status == nil {
-					return
-				}
-				controllers.UpsertMatches(res.Match, limiter, *res)
-			}(res)
-		alive:
-			mainTag.Reset()
-			flush = false
+			dataChan <- totalData[:length]
 		}
+		time.Sleep(time.Second * 11)
+		log.Println("\nbetconstruct connection was interrrupted restarting")
+		os.Exit(1)
+	}()
+	// go func() {
+	// 	var header1 = make([]byte, 1)
+	// 	var header3 = make([]byte, 3)
+	// 	var _length = make([]byte, 4)
+	// 	var totalData []byte
+	// 	const bufsize = bytesize.MB // bytesize.KB * 100
+	// 	var data []byte = make([]byte, bufsize)
+	// 	var totalRead int
+	// 	var length int
+	// 	for {
+	// 		pp.Println("locked")
+	//	// 		<-marshalDone
+	// 		pp.Println("unlocked")
+	// 		//TODO:  handle errors in this scope
+	// 		totalRead = 0
+	// 		totalData = totalData[:0]
+	// 		con.Read(header1)
+	// 		if string(header1) != "\r" {
+	// 			go func() {
+	//	// 				marshalDone <- true
+	// 			}()
+	// 			continue
+	// 		}
+	// 		con.Read(header3)
+	// 		if string(header3) != "\n\r\n" {
+	// 			go func() {
+	//	// 				marshalDone <- true
+	// 			}()
+	// 			continue
+	// 		}
+	// 		n, _ := con.Read(_length)
+	// 		if n < 4 {
+	// 			go func() {
+	//	// 				marshalDone <- true
+	// 			}()
+	// 			continue
+	// 		}
+	// 		length = int(tools.LE2Int(_length))
+	// 	readMore:
+	// 		n, _ = con.Read(data)
+	// 		totalRead += n
+	// 		totalData = append(totalData, data[:n]...)
+	// 		pp.Println(length, totalRead)
+	// 		if totalRead < length {
+	// 			pp.Println("goto")
+	// 			goto readMore
+	// 		}
+	// 		if totalRead > length {
+	// 			totalRead = 0
+	// 			totalData = totalData[:0]
+	// 			pp.Println("read more")
+	// 			go func() {
+	//	// 				marshalDone <- true
+	// 			}()
+	// 			continue
+	// 		}
+	// 		dataChan <- totalData[:totalRead]
+	// 	}
+	// }()
+	var value *models.BetconstructData
+	for {
+		select {
+		case a := <-dataChan:
+			// pp.Println(string(a))
+			value = new(models.BetconstructData)
+			err := json.Unmarshal(a, value)
+			//			marshalDone <- true
+			if nil != err {
+				//TODO:  write this to a file
+				// pp.Println(string(a))
+				f, _ := os.OpenFile("test.json", os.O_CREATE|os.O_WRONLY, 0x755)
+				f.Write(a)
+				f.Close()
+				pp.Println("error parsing the json from the parser", err)
+				continue
+			} else if nil == value || nil == value.Command {
+				//TODO:  handle this
+				pp.Println("value is nil")
+				continue
+			}
+		case <-time.After(time.Second * 11):
+			fmt.Println("\n\n\n\x1B[31m", "no data for 11 seconds restarting", "\x1B[0m")
+			os.Exit(0)
+		}
+		pp.Println(value.Command)
+		if nil != value.Error {
+			pp.Println(value)
+		}
+		// go func(res *models.BetradarLiveOdds) {
+		// 	var retried = false
+		// retry:
+		// 	select {
+		// 	case c <- res:
+		// 	case <-time.After(time.Millisecond * 10):
+		// 		if retried {
+		// 			return
+		// 		}
+		// 		retried = true
+		// 		goto retry
+		// 	}
+		// }(res)
+		// go func( /* res *models.BetconstructData */ ) {
+		// 	limiter <- true
+		// }()
 	}
 }

@@ -6,33 +6,26 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"./clientManager"
-	"./controllers/endpoints"
-	"./lib"
-	"./lib/betradar"
-	"./lib/store/filters"
-	"./lib/store/oddids"
-	wso "./lib/websocketops"
-	"./models"
-	_ "./models/language"
+	"github.com/mugsoft/ekollive.go/lib"
+	"github.com/mugsoft/ekollive.go/lib/betradar"
 )
 
 func init() {
-	oddids.LoadAll()
-	filters.Init()
+	// oddids.LoadAll()
+	// filters.Init()
 }
 func main() {
 	mux := http.NewServeMux()
-	mux.Handle("/", wso.StartWsServer()) //websocket server
-	mux.Handle("/filter/", http.StripPrefix("/filter", endpoints.Filter()))
-	mux.Handle("/command/", http.StripPrefix("/command", endpoints.Proxy()))
+	// mux.Handle("/", wso.StartWsServer()) //websocket server
+	// mux.Handle("/filter/", http.StripPrefix("/filter", endpoints.Filter()))
+	// mux.Handle("/command/", http.StripPrefix("/command", endpoints.Proxy()))
 	if *lib.Profile {
 		mux.HandleFunc("/debug/pprof/", pprof.Index)
 	}
-	var c = make(chan *models.BetradarLiveOdds)
-	go betradar.Parse(c)
-	go wso.StartBroadcast(c)
-	go clientManager.ManageWsClients()
+	// var c = make(chan *models.BetconstructData)
+	go betradar.Parse()
+	// go wso.StartBroadcast(c)
+	// go clientManager.ManageWsClients()
 	fmt.Println("server listenin on port ", *lib.Port)
 	log.Fatalln(http.ListenAndServe(":"+*lib.Port, mux))
 }
