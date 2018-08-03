@@ -1,21 +1,24 @@
 package betradar
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"time"
 
 	"github.com/k0kubun/pp"
 	"github.com/mugsoft/ekollive.go/lib"
 	"github.com/mugsoft/ekollive.go/models"
-	"github.com/mugsoft/tools"
+	"github.com/mugsoft/tools/bytesize"
 )
 
 // var limiter chan bool
 var dataChan chan []byte
-var marshalDone chan bool
+
+// var marshalDone chan bool
 
 func init() {
 	// limiter = make(chan bool, *lib.J)
@@ -28,86 +31,142 @@ func init() {
 	// 	}()
 	// }
 	dataChan = make(chan []byte)
-	marshalDone = make(chan bool)
+	// marshalDone = make(chan bool)
 }
 
 var consuming bool
+var ReadForTheFirstTime bool = false
 
 func Parse() {
 	con := Connect(*lib.ProxyURL)
 	//	var marshalDone = make(chan bool)
+	go sendping(con)
 	go func() {
-		var meta = make([]byte, 4)
-		var length int
-		var data []byte
-		const bufsize = 100
-		var buf = make([]byte, bufsize)
-		var remainingOctets int
-		for {
-			<-marshalDone
-			n, err := con.Read(meta)
+		var erroredNum int
+		var goodNum int
+		scanner := bufio.NewScanner(con)
+		scanner.Split(bufio.ScanLines)
+		scanner.Buffer(make([]byte, bytesize.MB*500), int(bytesize.GB))
+		// var length int
+		// const bufsize = 1024
+		// var buf = make([]byte, bufsize)
+		// var remainingOctets int
+		// var data = make([]byte, 0, 1<<10)
+		for scanner.Scan() {
+			// var meta = make([]byte, 4)
+			// <-marshalDone
+			// data := make([]byte, 5000)
+			// n, err := con.Read(data)
+			// if nil != err {
+			// 	pp.Println(err.Error())
+			// 	break
+			// } else if n < 4 {
+			// 	break
+			// }
+			// if n == 1 {
+			// 	pp.Println("n==1")
+			// 	pp.Println(data[:n])
+			// }
+			// pp.Println(meta)
+			// data = data[:0]
+			// length = int(tools.LE2Int(meta))
+			// remainingOctets = length
+			// consuming = true
+			// for remainingOctets > 0 {
+			//
+			// 	if remainingOctets < len(buf) {
+			// 		buf = buf[:remainingOctets]
+			// 	} else if remainingOctets > bufsize {
+			// 		buf = make([]byte, bufsize)
+			// 	}
+			// 	n, err = con.Read(buf)
+			// 	if nil != err {
+			// 		pp.Println(err.Error())
+			// 		break
+			// 	}
+			// 	fmt.Println(n, len(buf[:n]), remainingOctets)
+			// 	remainingOctets -= n
+			// 	data = append(data, buf[:n]...)
+			// 	time.Sleep(time.Millisecond * 10)
+			// }
+			// var dta = scanner.Bytes()
+			txt := scanner.Text()
+			if len(txt) == 0 {
+				fmt.Fprintln(os.Stderr, "0 data")
+				continue
+			}
+			var data = map[string]interface{}{}
+			err := json.Unmarshal(scanner.Bytes(), &data)
+			// pp.Println(data)
 			if nil != err {
-				pp.Println(err.Error())
-				break
-			} else if n < 4 {
-				break
+				erroredNum++
+				fmt.Fprintln(os.Stderr, err)
+			} else {
+				goodNum++
 			}
-			length = int(tools.LE2Int(meta))
-			remainingOctets = length
-			for remainingOctets > 0 {
-				consuming = true
-				if remainingOctets < len(buf) {
-					n, err = con.Read(buf[:remainingOctets])
-				} else {
-					n, err = con.Read(buf)
-				}
-				if nil != err {
-					pp.Println(err.Error())
-					break
-				}
-				remainingOctets -= n
-				data = append(data, buf[:n]...)
-			}
-			dataChan <- data
-			data = data[:0]
-			consuming = false
+			fmt.Printf("\033cgood => %d;bad => %d; %.2f%%", goodNum, erroredNum, (float64(erroredNum)*100.0)/float64(goodNum))
+			// dataChan <- dta //data[:length]
 		}
-		consuming = false
-		log.Println("\nbetconstruct connection was interrrupted restarting")
+		log.Println("\nbetconstruct connection was interrrupted restarting", scanner.Err())
 		os.Exit(1)
 	}()
-	marshalDone <- true //initially allow the reador to read
+	// marshalDone <- true //initially allow the reador to read
 	var value *models.BetconstructData
+	var count = 0
 	for {
 		select {
 		case a := <-dataChan:
-			// pp.Println(string(a))
+			ReadForTheFirstTime = true
+			pp.Println(string(a))
 			value = new(models.BetconstructData)
-			err := json.Unmarshal(a, value)
-			marshalDone <- true
+			err := json.Unmarshal([]byte(a), value)
 			if nil != err {
 				//TODO[x]:  write this to a file
+				if count <= 1 {
+					count++
+					// marshalDone <- true
+					continue
+				}
 				f, _ := os.OpenFile("erroredJSN.json", os.O_CREATE|os.O_WRONLY, 0x755)
-				f.Write(a)
+				f.Write([]byte(a))
 				f.Close()
 				pp.Println("error parsing the json from the parser", err)
+				os.Exit(1)
+				// marshalDone <- true
 				continue
 			} else if nil == value || nil == value.Command {
 				//TODO:  handle this
 				pp.Println("value is nil", value, string(a))
+				// marshalDone <- true
 				continue
 			}
-		case <-time.After(time.Minute):
-			if consuming {
-				pp.Println("consuming")
-				continue
-			}
-			fmt.Println("\n\n\n\x1B[31m", "no data for 11 seconds restarting", "\x1B[0m")
-			os.Exit(0)
+			// marshalDone <- true
+			// case <-time.After(time.Minute * 2):
+			// 	// if consuming {
+			// 	// 	pp.Println("consuming")
+			// 	// 	continue
+			// 	// } else
+			// 	if !ReadForTheFirstTime {
+			// 		pp.Println("waiting for the initial message")
+			// 		continue
+			// 	}
+			// 	fmt.Println("\n\n\n\x1B[31m", "no data for 2 minutes restarting", "\x1B[0m")
+			// 	os.Exit(0)
 		}
-		fmt.Print("\r", "\x1B[32m", *value.Command, "\x1B[0m\r")
+		// fmt.Print("\r", "\033c\x1B[32m", *value.Command, "  ", time.Now().Format("03:04:05"), "\x1B[0m\r")
 		if nil != value.Error {
 			pp.Println(value)
+		}
+	}
+}
+func sendping(con net.Conn) {
+	ticker := time.NewTicker(time.Second * 5)
+	for {
+		<-ticker.C
+		_, err := con.Write([]byte("ping"))
+		if nil != err {
+			pp.Println("sock error")
+			os.Exit(1)
 		}
 	}
 }
