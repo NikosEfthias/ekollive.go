@@ -13,7 +13,6 @@ var (
 	DumpTags    *bool
 	Profile     *bool
 	DisableMeta *bool
-	DirectURL   *string
 )
 
 func init() {
@@ -29,7 +28,6 @@ func applyFlags() {
 	DumpTags = flag.Bool("dt", false, "Dump raw xml tags to the stdout")
 	BAR = flag.Bool("b", false, "Diplay the limiter and goroutine numbers")
 	ProxyURL = flag.String("addr", ":1111", "betradar Proxy url to use to get live data")
-	DirectURL = flag.String("du", "localhost:8077", "betconstruct  url to use to get live data")
 	// DB = flag.String("DB", "root:root@tcp(:3306)/test", "DB address to use")
 	// DB2 = flag.String("DB2", "root:root@tcp(:3306)/test", "second db address to use")
 	Port = flag.String("PORT", "9090", "Port number to listen on")
