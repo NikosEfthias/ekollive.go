@@ -227,13 +227,15 @@ func handle__live_match_update(d *models.BetconstructData) {
 		if obj.IsSuspended != nil {
 			b__is_suspended = *obj.IsSuspended
 		}
-		if obj.MatchStatus != nil {
-
+		var periodLength *int = stats.PeriodLength
+		if stats.PeriodLength == nil {
+			periodLength = d.Stat.PeriodLength
 		}
+
 		var query = queries["live-MatchStatUpdate"] + lib.Prepare_on_duplicate_key_updates(map[string]interface{}{
 			"gamescore":         stats.GameScore,
 			"matchtime":         stats.EventTimeUtc,
-			"matchstatus":       obj.MatchStatus,
+			"matchstatus":       lib.Calculate_live_match_status(obj.MatchStatus, periodLength),
 			"betstatus":         obj.LiveStatus,
 			"score":             stats.Score,
 			"service":           stats.Server,
@@ -254,7 +256,7 @@ func handle__live_match_update(d *models.BetconstructData) {
 			lib.Int_or_nil(stats.EventId),
 			lib.String_or_nil(stats.GameScore),
 			lib.Time_or_nil(stats.EventTimeUtc),
-			lib.Int_or_nil(obj.MatchStatus),
+			lib.String_or_nil(lib.Calculate_live_match_status(obj.MatchStatus, periodLength)),
 			lib.Int_or_nil(obj.LiveStatus),
 			lib.String_or_nil(stats.Score),
 			lib.Int_or_nil(stats.Server), //not sure
