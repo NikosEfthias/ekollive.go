@@ -1,12 +1,15 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/mugsoft/ekollive.go/lib"
 	"github.com/mugsoft/ekollive.go/models"
+	wso "github.com/mugsoft/ekollive.go/ws"
+	"github.com/mugsoft/tools/ws"
 )
 
 var queries = map[string]string{
@@ -275,12 +278,15 @@ func handle__live_match_update(d *models.BetconstructData) {
 			lib.Int_or_nil(obj.RegionId),
 			lib.Int_or_nil(obj.CompetitionId),
 		)
+		dt, err := json.Marshal(d)
+		if nil == err {
+			ws.BroadcastJSON(&ws.Socket_data{Event: "data", Data: string(dt)}, wso.Opts)
+		}
 
 		if nil != err {
 			fmt.Fprintln(os.Stderr, err)
 		}
 
-		continue
 		lib.Log_error("error parsing competitors or something else", err)
 		continue
 	}

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/mugsoft/ekollive.go/controllers"
@@ -36,20 +37,30 @@ func Parse() {
 		for scanner.Scan() {
 			txt := scanner.Text()
 			if len(txt) == 0 {
-				// fmt.Fprintln(os.Stderr, "0 data")
-				erroredNum++
 				continue
 			}
 			var data = new(models.BetconstructData)
 			// fmt.Fprintln(os.Stderr, scanner.Text())
 			err := json.Unmarshal(scanner.Bytes(), data)
 			if nil != err {
+				if strings.Contains(txt, ",{") {
+					txt = "{" + strings.Split(txt, ",{")[1]
+					err = json.Unmarshal([]byte(txt), data)
+					if nil != err {
+						goto err
+					}
+					err = nil
+					fmt.Fprintln(os.Stderr, "recovered")
+					goto good
+				}
+			err:
 				fmt.Fprintln(os.Stderr, err.Error(), scanner.Text())
 				erroredNum++
-			} else {
-				goodNum++
-				dataChan <- data
+				continue
 			}
+		good:
+			goodNum++
+			dataChan <- data
 			time.Sleep(time.Millisecond)
 			if *lib.Bar {
 				fmt.Fprintf(os.Stdout, "\033cgood => %d;bad => %d; %.2f%% ==>> limiter(%v)", goodNum, erroredNum, (float64(erroredNum)*100.0)/float64(goodNum), len(controllers.Limiter))

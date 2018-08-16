@@ -18,22 +18,6 @@
   version = "v2.3.0"
 
 [[projects]]
-  digest = "1:ca955a9cd5b50b0f43d2cc3aeb35c951473eeca41b34eb67507f1dbcc0542394"
-  name = "github.com/kr/pretty"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "73f6ac0b30a98e433b289500d779f50c1a6f0712"
-  version = "v0.1.0"
-
-[[projects]]
-  digest = "1:15b5cc79aad436d47019f814fde81a10221c740dc8ddf769221a65097fb6c2e9"
-  name = "github.com/kr/text"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "e2ffdb16a802fe2bb95e2e35ff34f0e53aeef34f"
-  version = "v0.1.0"
-
-[[projects]]
   digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
   name = "github.com/mattn/go-colorable"
   packages = ["."]
@@ -51,9 +35,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4d89c89d2c226420c0fc62407ac117f1a75aa2fd6f4c4ac59cbe9eba00c22090"
+  digest = "1:ef2b2fbc2092c73d0da49c0991a2d12d7f9bd99b3315274f9a9de2561f8466eb"
   name = "github.com/mugsoft/tools"
-  packages = ["bytesize"]
+  packages = [
+    "bytesize",
+    "ws",
+  ]
   pruneopts = "UT"
   revision = "7bb994255f8851246836df56841e064f62b0953f"
 
@@ -79,8 +66,8 @@
   input-imports = [
     "github.com/go-sql-driver/mysql",
     "github.com/k0kubun/pp",
-    "github.com/kr/pretty",
     "github.com/mugsoft/tools/bytesize",
+    "github.com/mugsoft/tools/ws",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
