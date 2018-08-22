@@ -2,6 +2,8 @@ package lib
 
 import (
 	"flag"
+	"fmt"
+	"os"
 )
 
 var (
@@ -13,6 +15,7 @@ var (
 	Profile     *bool
 	Bar         *bool
 	IsLive      *bool
+	print       *bool
 )
 
 func init() {
@@ -20,9 +23,23 @@ func init() {
 		applyFlags()
 		flag.Parse()
 	}
+	if *print {
+		fmt.Println(
+			"j=>", *J,
+			"\nislive=>", *IsLive,
+			"\nport=>", *Port,
+			"\nproxyurl=>", *ProxyURL,
+			"\ndb=>", *DB,
+			"\nbar=>", *Bar,
+			"\nphppostaddr=>", *PhpPostADDR,
+			"\nProfile=>", *Profile,
+		)
+		os.Exit(0)
+	}
 
 }
 func applyFlags() {
+	print = flag.Bool("print", false, "print current flags and die")
 	IsLive = flag.Bool("live", false, "live or prematches")
 	Bar = flag.Bool("bar", true, "activate good/bad ratio display mode")
 	Profile = flag.Bool("prof", false, "activate cpu profiling")

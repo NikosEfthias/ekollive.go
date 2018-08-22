@@ -187,3 +187,15 @@ func Calculate_live_match_status(mtc_status *int, period *int) *string {
 	}
 	return &v
 }
+func Bool_to_int(n *bool) int {
+	if nil == n {
+		return 0
+	}
+	switch *n {
+	case true:
+		return 1
+	case false:
+		return 0
+	}
+	return 0
+}

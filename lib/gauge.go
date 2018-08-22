@@ -3,7 +3,7 @@ package lib
 import "fmt"
 
 func PrintProgress(curr int, char rune) {
-	const Max int = 100;
+	const Max int = 100
 	var a = make([]rune, Max)
 	a[0] = '['
 	a[Max-1] = ']'

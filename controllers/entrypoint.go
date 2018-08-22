@@ -12,7 +12,6 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/k0kubun/pp"
 	"github.com/mugsoft/ekollive.go/lib"
 	"github.com/mugsoft/ekollive.go/models"
 )
@@ -205,7 +204,6 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		st, err := db.Prepare(queries["OddUpdate"])
 		if nil != err {
 			lib.Log_error(err)
-			fmt.Println("oddupdate")
 			os.Exit(2)
 		}
 		for _, o := range d.Objects {
@@ -242,7 +240,6 @@ func sub__handle__match_market(d *models.BetconstructData) {
 	st, err := db.Prepare(queries["live_OddUpdate"])
 	if nil != err {
 		lib.Log_error(err)
-		fmt.Println("live_oddupdate")
 		os.Exit(1)
 	}
 	for _, o := range d.Objects {
@@ -269,7 +266,6 @@ func sub__handle__match_market(d *models.BetconstructData) {
 				time.Now().UTC().Format("2006-01-02 15:04:05"),
 			)
 			if nil != err {
-				pp.Println(o, s)
 				lib.Log_error(err)
 				continue
 			}

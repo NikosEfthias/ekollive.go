@@ -278,16 +278,62 @@ func handle__live_match_update(d *models.BetconstructData) {
 			lib.Int_or_nil(obj.RegionId),
 			lib.Int_or_nil(obj.CompetitionId),
 		)
-		dt, err := json.Marshal(d)
+		var odds = make([]*wso.Odd, 0)
+		var odd = &wso.Odd{
+			Active:   lib.Bool_to_int(obj.IsVisible),
+			OddsId:   obj.Id,
+			OddsType: obj.MarketTypeId,
+			Special:  obj.Handicap,
+			Odds:     []*wso.OddField{},
+		}
+		for _, s := range obj.Selections {
+			var odf = new(wso.OddField)
+			odf.Active = lib.Bool_to_int(s.IsVisible)
+			odf.Outcomeid = s.SelectionTypeId
+			odf.Odd = s.Price
+			odd.Odds = append(odd.Odds, odf)
+		}
+		var mid *int = obj.MatchId
+		if nil == mid {
+			mid = stats.EventId
+		}
+		if nil == mid {
+			continue
+		}
+
+		dt, err := json.Marshal(wso.Reply{
+			Active:      lib.Bool_to_int(obj.IsVisible),
+			Matchid:     mid,
+			Matchstatus: lib.Calculate_live_match_status(obj.MatchStatus, periodLength),
+			Service:     stats.Server,
+			Score: &wso.Score{
+				Matchscore: stats.Score,
+				Gamescore:  stats.GameScore,
+				Setscores:  stats.SetScore,
+			},
+			Time: &wso.Time{
+				Remainingtime: stats.RemainingTime,
+			},
+			Corners: &wso.Corners{
+				Home: lib.Split_score_fields(stats.CornerScore, lib.Side_home),
+				Away: lib.Split_score_fields(stats.CornerScore, lib.Side_away),
+			},
+			Cards: &wso.Cards{
+				Redaway:    lib.Split_score_fields(stats.RedcardScore, lib.Side_away),
+				Redhome:    lib.Split_score_fields(stats.RedcardScore, lib.Side_home),
+				Yellowhome: lib.Split_score_fields(stats.YellowcardScore, lib.Side_home),
+				Yellowaway: lib.Split_score_fields(stats.YellowcardScore, lib.Side_away),
+			},
+			Odds: odds,
+		})
 		if nil == err {
 			ws.BroadcastJSON(&ws.Socket_data{Event: "data", Data: string(dt)}, wso.Opts)
 		}
 
 		if nil != err {
 			fmt.Fprintln(os.Stderr, err)
+			lib.Log_error("error parsing competitors or something else", err)
 		}
-
-		lib.Log_error("error parsing competitors or something else", err)
 		continue
 	}
 
