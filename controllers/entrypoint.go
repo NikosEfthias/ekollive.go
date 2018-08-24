@@ -130,16 +130,23 @@ func handle__MatchStat(d *models.BetconstructData) {
 
 }
 func handle__SubscribeMatches(d *models.BetconstructData) {
-
+	if *d.Command == "SubscribeMatches" {
+		Limiter <- true
+		go sub__handle__match_statt(d)
+		return
+	}
 	if d.Type == nil && *d.Command != "MatchStat" {
 		return
 	} else if d.Type == nil {
+		Limiter <- true
+		go sub__handle__match_statt(d)
 		return
 	}
 	switch *d.Type {
+	case "MatchStat":
+		fallthrough
 	case "Match":
-		Limiter <- true
-		go sub__handle__match_statt(d)
+		fallthrough
 	case "Stat":
 		Limiter <- true
 		go sub__handle__match_statt(d)
