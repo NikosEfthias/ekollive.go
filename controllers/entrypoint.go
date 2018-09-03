@@ -14,6 +14,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mugsoft/ekollive.go/lib"
 	"github.com/mugsoft/ekollive.go/models"
+	wso "github.com/mugsoft/ekollive.go/ws"
+	"github.com/mugsoft/tools/ws"
 )
 
 var (
@@ -76,8 +78,6 @@ func Handle_data(d *models.BetconstructData) {
 		time.Sleep(time.Millisecond * 500)
 	case "GetMarketTypes":
 		handle__GetMarketTypes(d)
-	case "GetMatches":
-		handle__GetMatches(d)
 	case "GetSelectionTypes":
 		selCounter++
 		if selCounter < 500 {
@@ -115,18 +115,10 @@ func Handle_data(d *models.BetconstructData) {
 func handle__GetMarketTypes(d *models.BetconstructData) {
 	go __postData(*lib.PhpPostADDR, d)
 }
-func handle__GetMatches(d *models.BetconstructData) {
-}
 func handle__GetSelectionTypes(d []*models.BetconstructData) {
 	go __postData(*lib.PhpPostADDR, d)
 }
 func handle__SubscribePreMatch(d *models.BetconstructData) {
-
-}
-func handle__MatchUpdate(d *models.BetconstructData) {
-
-}
-func handle__MatchStat(d *models.BetconstructData) {
 
 }
 func handle__SubscribeMatches(d *models.BetconstructData) {
@@ -250,7 +242,15 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		os.Exit(1)
 	}
 	for _, o := range d.Objects {
+		var odds = []*wso.Odd{}
 		for _, s := range o.Selections {
+			var odd = &wso.Odd{
+				Active:   lib.Bool_to_int(s.IsVisible),
+				OddsId:   s.Id,
+				OddsType: s.Id,
+				Special:  s.Handicap,
+			}
+			odds = append(odds, odd)
 			if nil == s.SelectionTypeId {
 				continue
 			}
@@ -277,8 +277,22 @@ func sub__handle__match_market(d *models.BetconstructData) {
 				continue
 			}
 		}
+
+		dt, err := json.Marshal(wso.Reply{
+			Active:  lib.Bool_to_int(o.IsVisible),
+			Matchid: o.MatchId,
+			Odds:    odds,
+		})
+		if nil == err {
+			ws.BroadcastJSON(&ws.Socket_data{Event: "data", Data: string(dt)}, wso.Opts)
+		}
+
 	}
 	st.Close()
+	if nil != err {
+		fmt.Fprintln(os.Stderr, err)
+		lib.Log_error("error parsing competitors or something else", err)
+	}
 	return
 
 }
