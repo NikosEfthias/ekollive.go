@@ -2,3 +2,4 @@
 *.csv
 *.swp
 Session.vim
+errored.tags

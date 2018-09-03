@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/k0kubun/pp"
-	"github.com/mugsoft/ekollive.go/models"
+	"github.com/nikosEfthias/ekollive.go/models"
 )
 
 func Handle_match_update(data *models.Object) {

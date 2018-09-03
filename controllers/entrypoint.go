@@ -12,9 +12,9 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/mugsoft/ekollive.go/lib"
-	"github.com/mugsoft/ekollive.go/models"
-	wso "github.com/mugsoft/ekollive.go/ws"
+	"github.com/nikosEfthias/ekollive.go/lib"
+	"github.com/nikosEfthias/ekollive.go/models"
+	wso "github.com/nikosEfthias/ekollive.go/ws"
 	"github.com/mugsoft/tools/ws"
 )
 

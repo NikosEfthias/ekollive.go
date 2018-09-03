@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mugsoft/ekollive.go/controllers"
-	"github.com/mugsoft/ekollive.go/lib"
-	"github.com/mugsoft/ekollive.go/models"
+	"github.com/nikosEfthias/ekollive.go/controllers"
+	"github.com/nikosEfthias/ekollive.go/lib"
+	"github.com/nikosEfthias/ekollive.go/models"
 	"github.com/mugsoft/tools/bytesize"
 )
 
