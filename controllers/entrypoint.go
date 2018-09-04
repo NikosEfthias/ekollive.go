@@ -248,7 +248,13 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		os.Exit(1)
 	}
 	for _, o := range d.Objects {
-		var odds = []*wso.Odd{}
+		var odd = &wso.Odd{
+			Active:   lib.Bool_to_int(o.IsVisible),
+			OddsId:   o.Id,
+			OddsType: o.MarketTypeId,
+			Special:  o.Handicap,
+			Odds:     []*wso.OddField{},
+		}
 		for _, s := range o.Selections {
 			if "MatchResult" == o.MarketKind {
 				if nil != o.MatchId || nil != o.MarketTypeId {
@@ -256,13 +262,6 @@ func sub__handle__match_market(d *models.BetconstructData) {
 				}
 				continue
 			}
-			var odd = &wso.Odd{
-				Active:   lib.Bool_to_int(s.IsVisible),
-				OddsId:   s.Id,
-				OddsType: s.Id,
-				Special:  s.Handicap,
-			}
-			odds = append(odds, odd)
 			if nil == s.SelectionTypeId {
 				continue
 			}
@@ -273,6 +272,12 @@ func sub__handle__match_market(d *models.BetconstructData) {
 			if s.IsVisible != nil {
 				is__visible = *s.IsVisible
 			}
+			odf := &wso.OddField{
+				Active:    lib.Bool_to_int(s.IsVisible),
+				Outcomeid: s.SelectionTypeId,
+				Odd:       s.Price,
+			}
+			odd.Odds = append(odd.Odds, odf)
 			_, err := st.Exec(
 				lib.Int_or_nil(s.Id),
 				lib.Int_or_nil(o.MatchId),
@@ -289,11 +294,13 @@ func sub__handle__match_market(d *models.BetconstructData) {
 				continue
 			}
 		}
-
+		if "MatchResult" == o.MarketKind {
+			continue
+		}
 		dt, err := json.Marshal(wso.Reply{
 			Active:  lib.Bool_to_int(o.IsVisible),
 			Matchid: o.MatchId,
-			Odds:    odds,
+			Odds:    []*wso.Odd{odd},
 		})
 		if nil == err {
 			ws.BroadcastJSON(&ws.Socket_data{Event: "data", Data: string(dt)}, wso.Opts)
