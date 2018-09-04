@@ -3,3 +3,4 @@
 *.swp
 Session.vim
 errored.tags
+.DS_Store

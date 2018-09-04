@@ -154,6 +154,7 @@ type Object struct {
 	SelectionTypeId      *int             `json:"SelectionTypeId,omitempty"`
 	AwayValue            *int             `json:"AwayValue,omitempty"`
 	Outcome              *int             `json:"Outcome,omitempty"`
+	MarketKind           string           `json:"MarketKind,omitempty"`
 }
 
 type MatchMember struct {

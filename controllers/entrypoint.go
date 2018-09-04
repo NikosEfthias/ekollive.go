@@ -12,10 +12,10 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mugsoft/tools/ws"
 	"github.com/nikosEfthias/ekollive.go/lib"
 	"github.com/nikosEfthias/ekollive.go/models"
 	wso "github.com/nikosEfthias/ekollive.go/ws"
-	"github.com/mugsoft/tools/ws"
 )
 
 var (
@@ -207,6 +207,12 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		}
 		for _, o := range d.Objects {
 			for _, s := range o.Selections {
+				if "MatchResult" == o.MarketKind {
+					if nil != o.MatchId || nil != o.MarketTypeId {
+						handle__betresult(s, *o.MatchId, *o.MarketTypeId)
+					}
+					continue
+				}
 				if nil == s.SelectionTypeId {
 					continue
 				}
@@ -244,6 +250,12 @@ func sub__handle__match_market(d *models.BetconstructData) {
 	for _, o := range d.Objects {
 		var odds = []*wso.Odd{}
 		for _, s := range o.Selections {
+			if "MatchResult" == o.MarketKind {
+				if nil != o.MatchId || nil != o.MarketTypeId {
+					handle__betresult(s, *o.MatchId, *o.MarketTypeId)
+				}
+				continue
+			}
 			var odd = &wso.Odd{
 				Active:   lib.Bool_to_int(s.IsVisible),
 				OddsId:   s.Id,
@@ -285,6 +297,7 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		})
 		if nil == err {
 			ws.BroadcastJSON(&ws.Socket_data{Event: "data", Data: string(dt)}, wso.Opts)
+			_ = dt
 		}
 
 	}

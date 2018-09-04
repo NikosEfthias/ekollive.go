@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/mugsoft/tools/ws"
 	"github.com/nikosEfthias/ekollive.go/lib"
 	"github.com/nikosEfthias/ekollive.go/models"
 	wso "github.com/nikosEfthias/ekollive.go/ws"
-	"github.com/mugsoft/tools/ws"
 )
 
 var queries = map[string]string{
@@ -23,8 +23,21 @@ var queries = map[string]string{
 	"OddUpdate":            "INSERT INTO `odds`(`matchId`, `oddsType`, `outCome`, `special`, `outComeId`, `odds`, `status`) VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE odds=?, updatedAt=?",
 
 	"live_OddUpdate": "INSERT INTO `odds`(`oddid`, `matchid`, `oddFieldTypeId`, `oddTypeId`, `specialvalue`,  `odd`, `active`) VALUES (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE odd= ?, updatedAt= ?",
+
+	"betresult": "INSERT INTO `betresult` (`matchId`, `oddsType`, `outCome`, `outComeId`) VALUES (?,?,?,?)",
 }
 
+func handle__betresult(d models.Selection, match_id int, market_type_id int) {
+	_, err := db.Exec(queries["betresult"],
+		match_id,
+		market_type_id,
+		d.Outcome,
+		d.Id,
+	)
+	if nil != err {
+		fmt.Fprintln(os.Stderr, err)
+	}
+}
 func handle__pre_match_update(d *models.BetconstructData) {
 	var comp1, comp2 int
 	var comp1NameId, comp2NameId int
