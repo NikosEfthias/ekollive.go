@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mugsoft/tools/bytesize"
 	"github.com/nikosEfthias/ekollive.go/controllers"
 	"github.com/nikosEfthias/ekollive.go/lib"
 	"github.com/nikosEfthias/ekollive.go/models"
-	"github.com/mugsoft/tools/bytesize"
 )
 
 var dataChan chan *models.BetconstructData
@@ -63,7 +63,8 @@ func Parse() {
 			dataChan <- data
 			time.Sleep(time.Millisecond)
 			if *lib.Bar {
-				fmt.Fprintf(os.Stdout, "\033cgood => %d;bad => %d; %.2f%% ==>> limiter(%v)", goodNum, erroredNum, (float64(erroredNum)*100.0)/float64(goodNum), len(controllers.Limiter))
+				fmt.Print("\r                                                              ")
+				fmt.Fprintf(os.Stdout, "\rgood => %d;bad => %d; %.2f%% ==>> limiter(%v)", goodNum, erroredNum, (float64(erroredNum)*100.0)/float64(goodNum), len(controllers.Limiter))
 			}
 		}
 		log.Println("\nbetconstruct connection was interrrupted restarting", scanner.Err())

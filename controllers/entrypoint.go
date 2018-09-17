@@ -208,7 +208,7 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		for _, o := range d.Objects {
 			for _, s := range o.Selections {
 				if "MatchResult" == o.MarketKind {
-					if nil != o.MatchId || nil != o.MarketTypeId {
+					if nil != o.MatchId && nil != o.MarketTypeId {
 						handle__betresult(s, *o.MatchId, *o.MarketTypeId)
 					}
 					continue
@@ -248,6 +248,10 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		os.Exit(1)
 	}
 	for _, o := range d.Objects {
+		if "" != o.MarketKind {
+			fmt.Fprintln(os.Stderr, o.MarketKind)
+			fmt.Fprintln(os.Stdout, o.MarketKind)
+		}
 		var odd = &wso.Odd{
 			Active:   lib.Bool_to_int(o.IsVisible),
 			OddsId:   o.Id,
@@ -257,7 +261,7 @@ func sub__handle__match_market(d *models.BetconstructData) {
 		}
 		for _, s := range o.Selections {
 			if "MatchResult" == o.MarketKind {
-				if nil != o.MatchId || nil != o.MarketTypeId {
+				if nil != o.MatchId && nil != o.MarketTypeId {
 					handle__betresult(s, *o.MatchId, *o.MarketTypeId)
 				}
 				continue
